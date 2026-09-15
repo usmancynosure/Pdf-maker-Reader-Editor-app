@@ -4,6 +4,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_gradients.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../application/documents_provider.dart';
+import '../domain/document.dart';
+import '../../reader/presentation/reader_screen.dart';
 import 'widgets/document_tile.dart';
 import 'widgets/quick_action_card.dart';
 
@@ -22,6 +24,22 @@ class HomeScreen extends ConsumerWidget {
         backgroundColor: AppColors.inkSoft,
         content: Text('$what — coming in a later phase'),
       ),
+    );
+  }
+
+  void _open(BuildContext context, Document doc) {
+    if (!doc.hasFile) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.inkSoft,
+          content: Text('Sample document — scan one to create a real PDF'),
+        ),
+      );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => ReaderScreen(doc: doc)),
     );
   }
 
@@ -71,7 +89,7 @@ class HomeScreen extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: 9),
               child: DocumentTile(
                 doc: doc,
-                onTap: () => _todo(context, 'Open ${doc.name}'),
+                onTap: () => _open(context, doc),
               ),
             ),
         ],
