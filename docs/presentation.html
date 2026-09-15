@@ -1,0 +1,341 @@
+<title>Prisma Scan — Project Presentation</title>
+<style>
+  :root{
+    --violet:#7C4DFF; --pink:#EC4899; --amber:#FB923C; --cyan:#22B8CF; --teal:#14B8A6; --blue:#3B82F6;
+    --ink:#1A1726; --sub:#5A5570; --muted:#8A84A0; --line:#E9E4F3;
+    --bg:#F6F4FC; --bg2:#EEEAF8; --card:#FFFFFF; --soft:#F4F1FB;
+    --grad:linear-gradient(100deg,#A855F7,#EC4899 55%,#FB923C);
+    --code-bg:#f5f2fc;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --ink:#F1EEFA; --sub:#B4AECB; --muted:#8983A3; --line:#2A2540;
+      --bg:#0E0B18; --bg2:#0A0813; --card:#191430; --soft:#1E1838; --code-bg:#1c1636; }
+  }
+  :root[data-theme="light"]{ --ink:#1A1726; --sub:#5A5570; --muted:#8A84A0; --line:#E9E4F3; --bg:#F6F4FC; --bg2:#EEEAF8; --card:#fff; --soft:#F4F1FB; --code-bg:#f5f2fc; }
+  :root[data-theme="dark"]{ --ink:#F1EEFA; --sub:#B4AECB; --muted:#8983A3; --line:#2A2540; --bg:#0E0B18; --bg2:#0A0813; --card:#191430; --soft:#1E1838; --code-bg:#1c1636; }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:
+      radial-gradient(1100px 600px at 8% -5%, rgba(168,85,247,.14), transparent 60%),
+      radial-gradient(900px 600px at 108% 4%, rgba(34,184,207,.12), transparent 55%),
+      linear-gradient(180deg,var(--bg),var(--bg2));
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,"Segoe UI",Roboto,sans-serif;
+    line-height:1.62;-webkit-font-smoothing:antialiased;font-size:16px;}
+  .wrap{max-width:1000px;margin:0 auto;padding:56px 22px 100px}
+  h1,h2,h3{letter-spacing:-.02em;line-height:1.15;text-wrap:balance}
+  h1{font-size:clamp(30px,5.5vw,50px);font-weight:800;margin:.1em 0 .1em}
+  h2{font-size:clamp(22px,3.4vw,30px);font-weight:800;margin:0}
+  h3{font-size:18px;font-weight:750;margin:0 0 4px}
+  p{margin:.5em 0}
+  a{color:var(--violet)}
+  .kicker{font-size:12px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--violet)}
+  .lead{font-size:18.5px;color:var(--sub);max-width:66ch}
+  .muted{color:var(--muted)}
+
+  /* hero */
+  .hero{display:flex;gap:18px;align-items:center;margin-bottom:10px}
+  .logo{width:64px;height:64px;border-radius:20px;background:var(--grad);flex:none;display:grid;place-items:center;
+    box-shadow:0 14px 34px rgba(150,60,200,.35), inset 0 1px 0 rgba(255,255,255,.5)}
+  .logo svg{width:34px;height:34px}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 6px}
+  .pill{font-size:12.5px;font-weight:650;color:var(--sub);background:var(--card);border:1px solid var(--line);padding:6px 12px;border-radius:999px}
+
+  /* section shell */
+  section{margin-top:52px;scroll-margin-top:20px}
+  .sechead{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .secno{font-size:12px;font-weight:800;color:#fff;background:var(--violet);width:26px;height:26px;border-radius:8px;display:grid;place-items:center;flex:none}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px 22px;box-shadow:0 6px 20px rgba(80,50,140,.06)}
+
+  /* TOC */
+  .toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:22px}
+  .toc a{display:flex;gap:10px;align-items:center;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);
+    border-radius:13px;padding:12px 14px;font-weight:650;font-size:14.5px;transition:transform .15s,border-color .15s}
+  .toc a:hover{transform:translateY(-2px);border-color:var(--violet)}
+  .toc a b{color:var(--violet);font-variant-numeric:tabular-nums}
+
+  /* generic grids */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:720px){.grid2,.grid3{grid-template-columns:1fr}}
+  .feat h3{display:flex;align-items:center;gap:9px}
+  .ico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#fff;flex:none}
+  .ico svg{width:18px;height:18px}
+  .g1{background:linear-gradient(135deg,#F472B6,#EC4899)} .g2{background:linear-gradient(135deg,#A78BFA,#7C4DFF)}
+  .g3{background:linear-gradient(135deg,#60A5FA,#3B82F6)} .g4{background:linear-gradient(135deg,#5EEAD4,#14B8A6)}
+  .g5{background:linear-gradient(135deg,#FBBF24,#F97316)} .g6{background:linear-gradient(135deg,#818CF8,#6366F1)}
+
+  /* flow diagram */
+  .flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;margin-top:8px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:118px;flex:1;
+    display:flex;flex-direction:column;gap:3px;position:relative}
+  .step .n{font-size:11px;font-weight:800;color:var(--violet)}
+  .step b{font-size:14px}
+  .step span{font-size:12px;color:var(--muted)}
+  .arrow{display:flex;align-items:center;justify-content:center;color:var(--violet);width:30px;flex:none}
+  .arrow svg{width:20px;height:20px}
+  @media(max-width:720px){.arrow{width:100%;height:26px;transform:rotate(90deg)}}
+
+  /* architecture layers */
+  .layers{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .layer{border-radius:14px;padding:14px 16px;border:1px solid var(--line);position:relative;overflow:hidden}
+  .layer::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px}
+  .layer h3{margin:0 0 8px;font-size:15px}
+  .layer .row{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-size:12.5px;font-weight:600;background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:6px 10px;color:var(--ink)}
+  .l-ui{background:linear-gradient(90deg,rgba(236,72,153,.09),transparent)} .l-ui::before{background:var(--pink)}
+  .l-state{background:linear-gradient(90deg,rgba(124,77,255,.09),transparent)} .l-state::before{background:var(--violet)}
+  .l-data{background:linear-gradient(90deg,rgba(59,130,246,.09),transparent)} .l-data::before{background:var(--blue)}
+  .l-dom{background:linear-gradient(90deg,rgba(20,184,166,.10),transparent)} .l-dom::before{background:var(--teal)}
+  .cross{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .layerlabel{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+  /* table */
+  .tablewrap{overflow-x:auto;margin-top:10px;border:1px solid var(--line);border-radius:14px}
+  table{border-collapse:collapse;width:100%;font-size:14px;min-width:520px}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line)}
+  th{background:var(--soft);font-weight:750;font-size:12.5px;letter-spacing:.02em}
+  tr:last-child td{border-bottom:0}
+  td code{background:var(--code-bg);padding:2px 6px;border-radius:6px;font-size:12.5px}
+
+  /* Q&A */
+  .qa{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+  details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:2px 16px;transition:border-color .15s}
+  details[open]{border-color:var(--violet)}
+  summary{cursor:pointer;font-weight:700;padding:13px 0;list-style:none;display:flex;gap:10px;align-items:flex-start}
+  summary::-webkit-details-marker{display:none}
+  summary .qmark{color:var(--violet);font-weight:800;flex:none}
+  details p{margin:0 0 14px 26px;color:var(--sub);font-size:14.5px}
+  details .tag{font-size:11px;font-weight:700;color:var(--violet);background:rgba(124,77,255,.1);padding:2px 8px;border-radius:6px;margin-left:auto;flex:none}
+
+  /* roadmap */
+  .road{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+  @media(max-width:720px){.road{grid-template-columns:1fr}}
+  .rcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .rcard h3{display:flex;align-items:center;gap:9px}
+  .badge{font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:999px;letter-spacing:.03em}
+  .b-quick{background:rgba(20,184,166,.14);color:#0d9488} .b-mid{background:rgba(59,130,246,.14);color:#2563eb} .b-big{background:rgba(236,72,153,.14);color:#db2777}
+  .rcard ul{margin:8px 0 0;padding-left:18px} .rcard li{font-size:14px;margin:4px 0;color:var(--sub)}
+
+  ul.clean{list-style:none;padding:0;margin:8px 0} ul.clean li{padding:6px 0 6px 26px;position:relative;color:var(--sub)}
+  ul.clean li::before{content:"";position:absolute;left:4px;top:13px;width:8px;height:8px;border-radius:3px;background:var(--grad)}
+  b.hl{color:var(--ink)}
+  footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--line);color:var(--muted);font-size:13.5px}
+  .note{background:var(--soft);border-left:3px solid var(--violet);border-radius:0 10px 10px 0;padding:10px 14px;font-size:14px;color:var(--sub);margin-top:12px}
+</style>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="logo"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 4 8v8l8 5 8-5V8l-8-5Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 3v18M4 8l8 5 8-5" stroke="#fff" stroke-width="1.6" opacity=".85"/></svg></div>
+    <div>
+      <div class="kicker">Project Presentation · Flutter App</div>
+      <h1>Prisma Scan</h1>
+    </div>
+  </div>
+  <p class="lead">A mobile app that turns your phone camera into a <b class="hl">document scanner</b> and a full <b class="hl">PDF studio</b> — scan pages, clean them up, then read, edit, sign and share as PDF. Built with Flutter for iOS &amp; Android.</p>
+  <div class="pills">
+    <span class="pill">Flutter · Dart</span><span class="pill">Riverpod state</span><span class="pill">10 screens</span>
+    <span class="pill">Native scanning</span><span class="pill">Holographic UI</span><span class="pill">iOS &amp; Android</span>
+  </div>
+
+  <div class="toc">
+    <a href="#what"><b>01</b> What it is</a>
+    <a href="#screens"><b>02</b> The screens</a>
+    <a href="#journey"><b>03</b> How you use it</a>
+    <a href="#arch"><b>04</b> Architecture</a>
+    <a href="#pipeline"><b>05</b> Scan → PDF</a>
+    <a href="#stack"><b>06</b> Tech stack</a>
+    <a href="#interview"><b>07</b> Interview Q&amp;A</a>
+    <a href="#future"><b>08</b> Future features</a>
+  </div>
+
+  <!-- 01 WHAT -->
+  <section id="what">
+    <div class="sechead"><span class="secno">01</span><h2>What is Prisma Scan? (in plain words)</h2></div>
+    <p class="lead">Think of it as <b class="hl">"CamScanner meets a PDF editor."</b> You point your camera at a paper document; the app finds the paper's edges, straightens it, and makes it look clean — like a real scan. Then you can save it as a PDF and do everything a PDF app does.</p>
+    <div class="grid3" style="margin-top:14px">
+      <div class="card feat"><h3><span class="ico g1"><svg viewBox="0 0 24 24" fill="none"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></span>Scan</h3><p class="muted" style="font-size:14px;margin:0">Camera with automatic edge-detection and multi-page capture.</p></div>
+      <div class="card feat"><h3><span class="ico g2"><svg viewBox="0 0 24 24" fill="none"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg></span>Create</h3><p class="muted" style="font-size:14px;margin:0">Enhance with filters and export a clean, shareable PDF.</p></div>
+      <div class="card feat"><h3><span class="ico g4"><svg viewBox="0 0 24 24" fill="none"><path d="M3 17c3 0 3-8 6-8s3 6 6 6 3-3 6-3" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></span>Sign</h3><p class="muted" style="font-size:14px;margin:0">Read, reorganize, watermark and add your signature.</p></div>
+    </div>
+    <div class="note"><b>The problem it solves:</b> people constantly need to turn paper (receipts, IDs, contracts, forms) into tidy digital PDFs — and then tweak or sign them — without a desktop scanner. Prisma Scan does it all on the phone.</div>
+  </section>
+
+  <!-- 02 SCREENS -->
+  <section id="screens">
+    <div class="sechead"><span class="secno">02</span><h2>The screens</h2></div>
+    <p class="lead">The app has 10 screens. Four are the main tabs; the rest open on top when needed.</p>
+    <div class="tablewrap">
+      <table>
+        <tr><th>#</th><th>Screen</th><th>What it does</th></tr>
+        <tr><td>1</td><td><b>Splash</b></td><td>Brand animation while the app loads.</td></tr>
+        <tr><td>2</td><td><b>Home</b> <span class="muted">(tab)</span></td><td>Greeting, search, quick actions (Scan/Import/Tools/Sign), recent documents.</td></tr>
+        <tr><td>3</td><td><b>Scanner</b></td><td>Live camera with auto edge-detection and batch capture.</td></tr>
+        <tr><td>4</td><td><b>Edit &amp; Enhance</b></td><td>Crop, filters (Magic/Grayscale/B&amp;W), rotate, reorder → save as PDF.</td></tr>
+        <tr><td>5</td><td><b>PDF Reader</b></td><td>Read PDFs, pinch-zoom, page thumbnails, bookmark, share.</td></tr>
+        <tr><td>6</td><td><b>PDF Editor</b></td><td>Reorder/rotate/delete pages, merge, split, watermark, add text, sign, export.</td></tr>
+        <tr><td>7</td><td><b>Files</b> <span class="muted">(tab)</span></td><td>All documents, search, storage meter, rename/share/delete.</td></tr>
+        <tr><td>8</td><td><b>Tools</b> <span class="muted">(tab)</span></td><td>Pick any PDF to open in the editor.</td></tr>
+        <tr><td>9</td><td><b>Settings</b> <span class="muted">(tab)</span></td><td>App lock, cloud sync, export quality, about.</td></tr>
+        <tr><td>10</td><td><b>Pro Paywall</b></td><td>Subscription plans and premium feature list.</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 03 JOURNEY -->
+  <section id="journey">
+    <div class="sechead"><span class="secno">03</span><h2>How you use it — the main flow</h2></div>
+    <p class="lead">The everyday journey from paper to a shared PDF:</p>
+    <div class="flow">
+      <div class="step"><span class="n">1</span><b>Open app</b><span>Splash → Home</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step"><span class="n">2</span><b>Scan</b><span>Camera + edges</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step"><span class="n">3</span><b>Enhance</b><span>Filter + rotate</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step"><span class="n">4</span><b>Save PDF</b><span>Stored on device</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step"><span class="n">5</span><b>Read / Edit</b><span>Sign · merge · split</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step"><span class="n">6</span><b>Share</b><span>System share sheet</span></div>
+    </div>
+  </section>
+
+  <!-- 04 ARCHITECTURE -->
+  <section id="arch">
+    <div class="sechead"><span class="secno">04</span><h2>How it's built — architecture</h2></div>
+    <p class="lead">The code is organized <b class="hl">feature-first</b>: each feature (home, scanner, reader…) is its own folder, and inside it the code is split into <b class="hl">4 layers</b>. This keeps things easy to find and test.</p>
+
+    <span class="layerlabel">Data flows top → bottom · a tap on a screen calls a provider, which calls a service, which returns a model</span>
+    <div class="layers" style="margin-top:8px">
+      <div class="layer l-ui"><h3>① Presentation — what you see</h3><div class="row">
+        <span class="chip">Screens (HomeScreen, ReaderScreen…)</span><span class="chip">Widgets (GlassCard, DocumentTile)</span><span class="chip">GlassBottomNav + Scan FAB</span></div></div>
+      <div class="layer l-state"><h3>② Application — the brain (Riverpod)</h3><div class="row">
+        <span class="chip">documentsProvider</span><span class="chip">settingsProvider</span><span class="chip">bookmarksProvider</span><span class="chip">service providers</span></div></div>
+      <div class="layer l-data"><h3>③ Data — does the heavy work</h3><div class="row">
+        <span class="chip">ScannerService</span><span class="chip">PdfExporter</span><span class="chip">PdfEditorService</span><span class="chip">ImportService</span><span class="chip">PurchaseService</span></div></div>
+      <div class="layer l-dom"><h3>④ Domain — the plain data</h3><div class="row">
+        <span class="chip">Document</span><span class="chip">ScanPage</span><span class="chip">EditorPage</span><span class="chip">AppSettings</span></div></div>
+    </div>
+
+    <div class="cross">
+      <div class="card"><h3 style="font-size:15px">core/ <span class="muted" style="font-weight:500;font-size:13px">— shared foundation</span></h3>
+        <ul class="clean" style="margin:4px 0"><li>theme (colors, gradients, ThemeData)</li><li>router (go_router table)</li><li>utils &amp; constants</li></ul></div>
+      <div class="card"><h3 style="font-size:15px">shared/ <span class="muted" style="font-weight:500;font-size:13px">— reusable widgets</span></h3>
+        <ul class="clean" style="margin:4px 0"><li>HoloBackground / SoftBackground</li><li>GlassCard, GradientButton</li><li>GlassBottomNav</li></ul></div>
+    </div>
+    <div class="note"><b>Why this design?</b> New features slot in as a new folder without touching others. The UI never talks to native code directly — it always goes through a provider and a service, so any piece can be swapped or tested in isolation (e.g. the mock in-app-purchase service).</div>
+  </section>
+
+  <!-- 05 PIPELINE -->
+  <section id="pipeline">
+    <div class="sechead"><span class="secno">05</span><h2>Under the hood — the Scan → PDF pipeline</h2></div>
+    <p class="lead">This is the app's core magic. The slow image work runs on a <b class="hl">background isolate</b> (a separate thread) so the screen never freezes.</p>
+    <div class="flow">
+      <div class="step"><span class="n">A</span><b>Capture</b><span>Native scanner returns image files</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step"><span class="n">B</span><b>Edit</b><span>Pick filter + rotation per page</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step"><span class="n">C</span><b>Process</b><span>Rotate + filter pixels (isolate)</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step"><span class="n">D</span><b>Build PDF</b><span>Assemble A4 pages</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step"><span class="n">E</span><b>Save + list</b><span>Write file → documentsProvider</span></div>
+    </div>
+    <div class="grid2" style="margin-top:14px">
+      <div class="card"><h3 style="font-size:15px">Native scanning</h3><p class="muted" style="font-size:14px;margin:0">Uses the phone's own scanner — <b class="hl">VisionKit</b> on iOS and <b class="hl">ML Kit</b> on Android — for the best edge-detection with the least code.</p></div>
+      <div class="card"><h3 style="font-size:15px">Editing existing PDFs</h3><p class="muted" style="font-size:14px;margin:0">Merge, split, reorder, watermark and sign are done with the <b class="hl">Syncfusion PDF</b> library by copying page content into a new document.</p></div>
+    </div>
+  </section>
+
+  <!-- 06 STACK -->
+  <section id="stack">
+    <div class="sechead"><span class="secno">06</span><h2>Tech stack &amp; why</h2></div>
+    <div class="tablewrap">
+      <table>
+        <tr><th>Job</th><th>Tool</th><th>Why</th></tr>
+        <tr><td>Framework</td><td><code>Flutter</code></td><td>One codebase → iOS + Android, native speed.</td></tr>
+        <tr><td>State management</td><td><code>flutter_riverpod</code></td><td>Compile-safe, testable, easy to share data across screens.</td></tr>
+        <tr><td>Navigation</td><td><code>go_router</code></td><td>Central, declarative route table.</td></tr>
+        <tr><td>Scanning</td><td><code>cunning_document_scanner</code></td><td>Wraps native VisionKit / ML Kit edge-detection.</td></tr>
+        <tr><td>Make PDF from images</td><td><code>pdf</code> + <code>image</code></td><td>Apply filters &amp; assemble pages in an isolate.</td></tr>
+        <tr><td>Read / thumbnails</td><td><code>pdfx</code></td><td>Renders PDF pages to the screen &amp; grid.</td></tr>
+        <tr><td>Edit PDFs</td><td><code>syncfusion_flutter_pdf</code></td><td>Merge/split/reorder/watermark/sign existing PDFs.</td></tr>
+        <tr><td>Signature</td><td><code>signature</code></td><td>Finger-drawn signature captured as an image.</td></tr>
+        <tr><td>Import &amp; share</td><td><code>image_picker</code>, <code>share_plus</code></td><td>Bring photos in, send PDFs out via the system.</td></tr>
+        <tr><td>Storage</td><td><code>shared_preferences</code>, <code>path_provider</code></td><td>Save settings and write PDF files to disk.</td></tr>
+        <tr><td>Monetization</td><td>RevenueCat-ready</td><td>Clean interface; mock now, real IAP later.</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 07 INTERVIEW -->
+  <section id="interview">
+    <div class="sechead"><span class="secno">07</span><h2>Interview questions &amp; answers</h2></div>
+    <p class="lead">Likely questions about this project, with short answers you can say out loud.</p>
+    <div class="qa">
+      <details><summary><span class="qmark">Q</span>Why did you choose Flutter for this app?<span class="tag">Basics</span></summary>
+        <p>One codebase ships to both iOS and Android with near-native performance, a rich widget set for the custom glassmorphism UI, and easy access to native features (camera, files) through plugins. It cut development time roughly in half versus building two native apps.</p></details>
+
+      <details><summary><span class="qmark">Q</span>Why Riverpod instead of setState or Provider?<span class="tag">State</span></summary>
+        <p>The document list, settings and bookmarks are shared across many screens. Riverpod gives compile-safe, globally-accessible state without <code>BuildContext</code>, easy dependency injection (services are providers, so I can swap a real service for a mock in tests), and fine-grained rebuilds with <code>.select()</code>. setState only fits local, single-widget state.</p></details>
+
+      <details><summary><span class="qmark">Q</span>Explain your project's folder structure.<span class="tag">Architecture</span></summary>
+        <p>Feature-first: each feature folder (home, scanner, reader, editor, files, settings…) contains <code>presentation</code> (UI), <code>application</code> (Riverpod providers), <code>data</code> (services/repositories) and <code>domain</code> (plain models). Shared building blocks live in <code>core/</code> (theme, router) and <code>shared/</code> (reusable widgets). Features stay independent and testable.</p></details>
+
+      <details><summary><span class="qmark">Q</span>The image processing is heavy — how do you keep the UI smooth?<span class="tag">Performance</span></summary>
+        <p>The pixel work (rotate + filter + build the PDF) runs on a background <b>isolate</b> using Flutter's <code>compute()</code>. Dart is single-threaded per isolate, so doing this off the UI isolate keeps the main thread at 60fps. A loading overlay shows progress while it runs.</p></details>
+
+      <details><summary><span class="qmark">Q</span>How do you scan documents — did you build edge-detection yourself?<span class="tag">Native</span></summary>
+        <p>No — I use the platform's own document scanner (Apple VisionKit on iOS, Google ML Kit on Android) via a plugin. It already does high-quality edge-detection and perspective correction. Reusing it means better results, less code, and it stays maintained by the OS vendors.</p></details>
+
+      <details><summary><span class="qmark">Q</span>How do you edit an existing PDF (merge, split, reorder)?<span class="tag">PDF</span></summary>
+        <p>With the Syncfusion PDF library. I load the source PDF, then build a new document by importing each page as a template into the order I want; deleted pages are simply skipped, rotation is applied per page, and merge just pulls pages from a second file. Watermark and signature are drawn onto a page's graphics before saving.</p></details>
+
+      <details><summary><span class="qmark">Q</span>The whole app is a light "holographic" theme. How did you handle dark-mode devices?<span class="tag">Theming</span></summary>
+        <p>The design is a deliberate single visual world, so I force the light theme app-wide (<code>ThemeMode.light</code>). This avoids the classic bug where a forced-light bottom sheet inherits dark-theme text and becomes invisible — a real issue I caught and fixed by locking the theme.</p></details>
+
+      <details><summary><span class="qmark">Q</span>How is the app monetized, and is the payment code done?<span class="tag">Business</span></summary>
+        <p>Freemium with a Pro paywall (weekly/yearly/lifetime). Payments sit behind a <code>PurchaseService</code> interface with a mock implementation that unlocks locally so the flow is fully testable. Going live is just implementing that interface with RevenueCat — no UI changes needed.</p></details>
+
+      <details><summary><span class="qmark">Q</span>How do you store documents and settings?<span class="tag">Storage</span></summary>
+        <p>Generated PDFs are written to the app's documents directory via <code>path_provider</code>; each <code>Document</code> model keeps the file path. Small key-value settings (app lock, export quality, Pro status) use <code>shared_preferences</code>, loaded once at startup and injected through a provider override.</p></details>
+
+      <details><summary><span class="qmark">Q</span>What was the hardest bug you fixed?<span class="tag">Debugging</span></summary>
+        <p>The raised center scan button was being clipped: it lived inside the nav bar's <code>ClipRRect</code>, so the part poking above got cut off. I restructured the nav into a <code>Stack</code> with <code>clipBehavior: Clip.none</code> and overlaid the button on top. Also the dark-mode invisible-sheet bug mentioned above.</p></details>
+
+      <details><summary><span class="qmark">Q</span>How would you test this app?<span class="tag">Quality</span></summary>
+        <p>Unit-test the services and models (PDF export, date formatting, document logic) with mocked providers; widget-test key screens; and use integration tests for the scan→save→read flow. Because services are injected via Riverpod, swapping real ones for fakes is trivial.</p></details>
+
+      <details><summary><span class="qmark">Q</span>If you had more time, what would you improve first?<span class="tag">Vision</span></summary>
+        <p>OCR (searchable text + export to Word), real cloud sync, and folders. Then password-protected PDFs and PDF compression — see the roadmap below.</p></details>
+    </div>
+  </section>
+
+  <!-- 08 FUTURE -->
+  <section id="future">
+    <div class="sechead"><span class="secno">08</span><h2>Features we can add next</h2></div>
+    <p class="lead">Grouped by effort so you can plan a roadmap.</p>
+    <div class="road">
+      <div class="rcard"><h3><span class="ico g4"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></span>Quick wins <span class="badge b-quick">low effort</span></h3>
+        <ul><li>Empty-state illustrations (already generated)</li><li>Folders / collections in Files</li><li>PDF compression (smaller files)</li><li>Reorder pages via drag in Reader</li><li>Recent-search history</li><li>Haptics &amp; polish animations</li></ul></div>
+
+      <div class="rcard"><h3><span class="ico g3"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></span>Core upgrades <span class="badge b-mid">medium effort</span></h3>
+        <ul><li><b>OCR</b> — searchable text, copy &amp; export to Word/TXT</li><li>Password-protect / encrypt PDFs</li><li>Biometric app lock (Face ID / fingerprint)</li><li>Free-placement text &amp; annotations (highlight, notes)</li><li>ID-card mode (front + back on one page)</li><li>QR / barcode scanning</li></ul></div>
+
+      <div class="rcard"><h3><span class="ico g2"><svg viewBox="0 0 24 24" fill="none"><path d="M6 19a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1.5A4 4 0 0 1 18 19H6Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></span>Cloud &amp; sync <span class="badge b-big">bigger effort</span></h3>
+        <ul><li>Real cloud backup (iCloud / Google Drive / Dropbox)</li><li>Cross-device sync of documents</li><li>Accounts &amp; login</li><li>Share links with expiry</li><li>Team / shared folders</li></ul></div>
+
+      <div class="rcard"><h3><span class="ico g1"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5-2.3 1-5.5-4-3.9 5.5-.8L12 3Z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></span>AI &amp; smart features <span class="badge b-big">bigger effort</span></h3>
+        <ul><li>AI summary of a scanned document</li><li>Auto-name files from their content</li><li>Smart categories (receipt, ID, invoice)</li><li>Translate scanned text</li><li>Ask questions about a PDF (chat)</li><li>Auto-erase shadows &amp; fingers from scans</li></ul></div>
+    </div>
+    <div class="note"><b>Suggested first three:</b> OCR (huge value, expected in scanner apps) → Folders (organization) → Cloud backup (retention &amp; trust). These also strengthen the Pro upsell.</div>
+  </section>
+
+  <footer>
+    <b>Prisma Scan</b> — Document Scanner &amp; PDF Studio · Built with Flutter · Scan · Create · Sign<br>
+    Presentation document · all 7 build phases complete · running on iOS &amp; Android.
+  </footer>
+</div>
