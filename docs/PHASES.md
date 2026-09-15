@@ -7,8 +7,8 @@ documented in `docs/phase-XX-*.md` and pushed to GitHub when complete.
 | Phase | Title | Scope | Status |
 |-------|-------|-------|--------|
 | **1** | Foundation & Splash | Project setup, theme system, reusable glass/gradient widgets, routing, splash screen | ✅ Done |
-| **2** | Home & Navigation | Full home (greeting, search, quick actions, recent docs), glass bottom nav + scan FAB, document model & providers | ⏳ Next |
-| **3** | Scanner & Edit | Camera + auto edge-detection (`cunning_document_scanner`), crop, magic-color filters, multi-page, save as PDF | ⬜ Planned |
+| **2** | Home & Navigation | Full home (greeting, search, quick actions, recent docs), glass bottom nav + scan FAB, document model & providers | ✅ Done |
+| **3** | Scanner & Edit | Camera + auto edge-detection (`cunning_document_scanner`), crop, magic-color filters, multi-page, save as PDF | ⏳ Next |
 | **4** | PDF Reader | Open & read PDFs, thumbnails, search, bookmark, share | ⬜ Planned |
 | **5** | PDF Editor | Reorder / delete pages, merge, split, add text, e-signature, watermark, export | ⬜ Planned |
 | **6** | Files | Document library, folders, storage meter, rename/share/delete | ⬜ Planned |

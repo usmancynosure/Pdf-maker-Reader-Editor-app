@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
 import '../../features/splash/presentation/splash_screen.dart';
-import '../../features/home/presentation/home_screen.dart';
+import '../../features/shell/presentation/main_shell.dart';
 
 /// Central route table. Screens are added phase by phase.
 class AppRoutes {
@@ -18,7 +18,7 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.home,
-      builder: (context, state) => const HomeScreen(),
+      builder: (context, state) => const MainShell(),
     ),
   ],
 );
