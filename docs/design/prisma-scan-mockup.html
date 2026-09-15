@@ -1,0 +1,609 @@
+<title>Prisma Scan — App Design</title>
+<style>
+  :root{
+    --pink:#F8A5E0; --lav:#B98CFF; --peri:#8AA8FF; --cyan:#7EE8FA;
+    --accent:#7C4DFF; --ink:#1A1726; --muted:#6B6880; --line:#EDE9F5;
+    --cta:linear-gradient(100deg,#A855F7 0%,#EC4899 52%,#FB923C 100%);
+    --holo:linear-gradient(135deg,#F8A5E0 0%,#C6A0F5 34%,#93A9FF 66%,#7EE8FA 100%);
+    --holo2:linear-gradient(160deg,#FBB6E6 0%,#C9A2F2 45%,#8FC6F5 100%);
+    --glass:rgba(255,255,255,.62); --glass-strong:rgba(255,255,255,.82);
+    /* page chrome */
+    --bg:#EEECF4; --bg2:#E4E1EE; --card:#ffffff; --title:#211C33; --sub:#6A6580;
+    --frame:#0d0b16; --frameline:rgba(255,255,255,.08);
+    font-synthesis-weight:none;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#121019; --bg2:#0c0a12; --card:#1b1826; --title:#F3F0FB; --sub:#9C97B4; }
+  }
+  :root[data-theme="light"]{ --bg:#EEECF4; --bg2:#E4E1EE; --card:#fff; --title:#211C33; --sub:#6A6580; }
+  :root[data-theme="dark"]{ --bg:#121019; --bg2:#0c0a12; --card:#1b1826; --title:#F3F0FB; --sub:#9C97B4; }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:
+      radial-gradient(1200px 700px at 12% -8%, rgba(185,140,255,.18), transparent 60%),
+      radial-gradient(1000px 700px at 105% 5%, rgba(126,232,250,.16), transparent 55%),
+      linear-gradient(180deg,var(--bg),var(--bg2));
+    color:var(--title);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",system-ui,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  .wrap{max-width:1200px;margin:0 auto;padding:56px 24px 90px}
+
+  /* ---- page header ---- */
+  .masthead{display:flex;flex-direction:column;gap:18px;margin-bottom:14px}
+  .brandrow{display:flex;align-items:center;gap:14px}
+  .brandmark{width:52px;height:52px;border-radius:16px;background:var(--holo);display:grid;place-items:center;
+    box-shadow:0 10px 26px rgba(150,110,240,.42), inset 0 1px 0 rgba(255,255,255,.6)}
+  .brandmark svg{width:28px;height:28px}
+  h1{font-size:clamp(30px,5vw,46px);margin:0;letter-spacing:-.03em;font-weight:800;line-height:1.02;text-wrap:balance}
+  .kicker{font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
+  .lede{max-width:60ch;color:var(--sub);font-size:16.5px;margin:0}
+  .metarow{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .chip{font-size:12.5px;font-weight:600;color:var(--sub);background:var(--card);border:1px solid var(--line);
+    padding:6px 12px;border-radius:999px}
+  @media (prefers-color-scheme:dark){.chip{border-color:rgba(255,255,255,.08)}}
+  :root[data-theme="dark"] .chip{border-color:rgba(255,255,255,.08)}
+
+  /* ---- gallery ---- */
+  .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:42px 34px;margin-top:44px;align-items:start}
+  .slot{display:flex;flex-direction:column;gap:14px;align-items:center}
+  .caption{text-align:center}
+  .caption .n{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+  .caption h3{margin:2px 0 2px;font-size:18px;font-weight:750;letter-spacing:-.01em}
+  .caption p{margin:0;font-size:13.5px;color:var(--sub);max-width:34ch}
+
+  /* ---- phone frame ---- */
+  .phone{width:300px;height:640px;border-radius:46px;background:var(--frame);padding:11px;position:relative;
+    box-shadow:0 40px 80px -28px rgba(40,20,80,.55), 0 8px 22px rgba(40,20,80,.22), inset 0 0 0 1px var(--frameline);
+    flex:none}
+  .screen{position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;background:#fff;
+    display:flex;flex-direction:column}
+  .notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:104px;height:26px;background:#000;
+    border-radius:16px;z-index:40}
+  /* status bar */
+  .status{height:44px;flex:none;display:flex;align-items:flex-end;justify-content:space-between;padding:0 22px 6px;
+    font-size:13px;font-weight:650;color:var(--ink);position:relative;z-index:30}
+  .status.onholo{color:#221a33}
+  .status .rgt{display:flex;align-items:center;gap:5px}
+  .status .rgt svg{width:16px;height:16px}
+  .homebar{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);width:118px;height:5px;border-radius:5px;
+    background:rgba(20,10,40,.32);z-index:40}
+  .homebar.light{background:rgba(255,255,255,.7)}
+
+  .body{flex:1;min-height:0;position:relative;overflow:hidden}
+  .holobg{position:absolute;inset:0;background:var(--holo)}
+  .holobg::after{content:"";position:absolute;inset:0;
+    background:radial-gradient(120% 80% at 80% 0%,rgba(255,255,255,.5),transparent 55%),
+      radial-gradient(90% 60% at 0% 100%,rgba(126,232,250,.5),transparent 60%)}
+  .scroll{position:absolute;inset:0;padding:6px 16px 16px;overflow:hidden}
+  .light-bg{position:absolute;inset:0;background:linear-gradient(180deg,#FBF9FF, #F4F1FB)}
+
+  /* glass + parts */
+  .glass{background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.6);border-radius:22px;box-shadow:0 8px 22px rgba(90,60,160,.14)}
+  .card{background:var(--glass-strong);border-radius:20px;border:1px solid rgba(255,255,255,.7);
+    box-shadow:0 8px 20px rgba(90,60,160,.12)}
+  .h-title{font-size:12px;font-weight:750;letter-spacing:.02em;color:#2a2140;margin:14px 2px 8px}
+  .muted{color:#6a6280}
+
+  .pill-cta{display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:18px;
+    background:var(--cta);color:#fff;font-weight:750;font-size:15px;box-shadow:0 12px 26px rgba(230,90,160,.4)}
+  .pill-cta svg{width:18px;height:18px}
+
+  .avatar{width:44px;height:44px;border-radius:14px;background:var(--holo2);display:grid;place-items:center;
+    font-weight:800;color:#3a2a55;border:1px solid rgba(255,255,255,.7)}
+  .iconbtn{width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.55);display:grid;place-items:center;
+    border:1px solid rgba(255,255,255,.6)}
+  .iconbtn.crown{background:var(--cta)}
+  .iconbtn svg{width:19px;height:19px}
+  .iconbtn.crown svg{color:#fff}
+
+  .quad{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .qa{border-radius:20px;padding:14px;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;
+    background:var(--glass-strong);border:1px solid rgba(255,255,255,.7);box-shadow:0 8px 18px rgba(90,60,160,.12)}
+  .qa .ico{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;color:#fff}
+  .qa .ico svg{width:21px;height:21px}
+  .qa b{font-size:14.5px;font-weight:730;color:#241c38}
+  .qa span{font-size:11.5px;color:#6a6280}
+  .g-pink{background:linear-gradient(135deg,#F472B6,#EC4899)}
+  .g-violet{background:linear-gradient(135deg,#A78BFA,#7C4DFF)}
+  .g-blue{background:linear-gradient(135deg,#60A5FA,#3B82F6)}
+  .g-teal{background:linear-gradient(135deg,#5EEAD4,#14B8A6)}
+  .g-amber{background:linear-gradient(135deg,#FBBF24,#F97316)}
+
+  .doc{display:flex;gap:11px;align-items:center;padding:11px;border-radius:16px;background:rgba(255,255,255,.66);
+    border:1px solid rgba(255,255,255,.6)}
+  .thumb{width:44px;height:56px;border-radius:9px;background:#fff;border:1px solid #e7e2f2;position:relative;overflow:hidden;flex:none;
+    box-shadow:0 3px 8px rgba(80,50,140,.12)}
+  .thumb i{position:absolute;left:7px;right:7px;height:3px;border-radius:3px;background:#e4ddf0}
+  .doc .meta{flex:1;min-width:0}
+  .doc .meta b{display:block;font-size:13.5px;font-weight:680;color:#241c38;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .doc .meta span{font-size:11.5px;color:#7a7392}
+  .tagp{font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px;color:#7C4DFF;background:rgba(124,77,255,.12)}
+
+  /* bottom nav */
+  .nav{position:absolute;left:14px;right:14px;bottom:12px;height:64px;border-radius:24px;z-index:20;
+    background:rgba(255,255,255,.72);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,.7);box-shadow:0 14px 30px rgba(90,60,160,.2);
+    display:flex;align-items:center;justify-content:space-around;padding:0 14px}
+  .nav a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9.5px;font-weight:640;color:#9089a6}
+  .nav a svg{width:22px;height:22px}
+  .nav a.on{color:#7C4DFF}
+  .fab{width:56px;height:56px;border-radius:20px;background:var(--cta);display:grid;place-items:center;color:#fff;
+    box-shadow:0 12px 24px rgba(230,90,160,.5);margin-top:-26px;border:3px solid rgba(255,255,255,.85)}
+  .fab svg{width:26px;height:26px}
+
+  /* scanner */
+  .vf{position:absolute;inset:0;background:linear-gradient(160deg,#2a2440,#171327)}
+  .vf .paper{position:absolute;top:20%;left:12%;right:12%;bottom:22%;background:linear-gradient(150deg,#f4f0ff,#dfe6ff);
+    border-radius:10px;transform:perspective(600px) rotateX(4deg) rotateZ(-2deg);box-shadow:0 30px 60px rgba(0,0,0,.5)}
+  .vf .paper i{position:absolute;left:14px;right:14px;height:4px;border-radius:4px;background:#cdbfe6}
+  .corner{position:absolute;width:26px;height:26px;border:3px solid #7EE8FA;filter:drop-shadow(0 0 6px rgba(126,232,250,.9))}
+  .edgeline{position:absolute;border:2px solid rgba(126,232,250,.85);border-radius:8px;box-shadow:0 0 18px rgba(126,232,250,.5)}
+  .shutter{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);width:70px;height:70px;border-radius:50%;
+    background:rgba(255,255,255,.16);border:3px solid #fff;display:grid;place-items:center}
+  .shutter i{width:54px;height:54px;border-radius:50%;background:#fff}
+  .modes{position:absolute;bottom:112px;left:0;right:0;display:flex;justify-content:center;gap:16px;
+    font-size:12px;font-weight:650;color:rgba(255,255,255,.55)}
+  .modes .on{color:#7EE8FA}
+  .camtop{position:absolute;top:8px;left:14px;right:14px;display:flex;justify-content:space-between;z-index:5}
+  .camtop .cbtn{width:40px;height:40px;border-radius:13px;background:rgba(255,255,255,.14);display:grid;place-items:center;
+    color:#fff;border:1px solid rgba(255,255,255,.2)}
+  .camtop .cbtn svg{width:19px;height:19px}
+  .pagebadge{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.4);color:#fff;
+    font-size:12px;font-weight:650;padding:6px 14px;border-radius:999px;z-index:5}
+
+  /* filter chips */
+  .chips{display:flex;gap:8px;overflow:hidden}
+  .fchip{flex:none;font-size:11.5px;font-weight:650;padding:8px 14px;border-radius:12px;background:rgba(255,255,255,.6);
+    color:#4a4165;border:1px solid rgba(255,255,255,.6)}
+  .fchip.on{background:var(--accent);color:#fff;border-color:transparent}
+  .filmstrip{display:flex;gap:8px}
+  .filmstrip .fp{width:40px;height:52px;border-radius:8px;background:#fff;border:1px solid #e5dff2;position:relative;overflow:hidden;flex:none}
+  .filmstrip .fp.sel{border:2px solid #7C4DFF}
+  .tools4{display:flex;justify-content:space-between;padding:0 6px}
+  .tool{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:10.5px;color:#4a4165;font-weight:600}
+  .tool .tc{width:46px;height:46px;border-radius:15px;background:rgba(255,255,255,.7);display:grid;place-items:center;
+    border:1px solid rgba(255,255,255,.6)}
+  .tool .tc svg{width:20px;height:20px;color:#5a4d7d}
+
+  /* reader */
+  .readpage{background:#fff;border-radius:8px;box-shadow:0 12px 30px rgba(60,40,110,.22);padding:16px;position:relative}
+  .readpage .ln{height:6px;border-radius:6px;background:#eae4f4;margin-bottom:9px}
+  .readpage .ln.s{width:62%}
+  .readpage .hd{height:11px;width:52%;border-radius:6px;background:#c9bce6;margin-bottom:13px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#241c38}
+  .topbar .tt{font-size:14px;font-weight:730;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rtool{position:absolute;left:14px;right:14px;bottom:14px;height:58px;border-radius:20px;z-index:6;
+    background:rgba(255,255,255,.78);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.7);box-shadow:0 12px 26px rgba(90,60,160,.18);
+    display:flex;align-items:center;justify-content:space-around;color:#6a6280}
+  .rtool svg{width:21px;height:21px}
+  .rtool .on{color:#7C4DFF}
+  .pageind{position:absolute;bottom:82px;left:50%;transform:translateX(-50%);background:rgba(30,20,55,.72);color:#fff;
+    font-size:11.5px;font-weight:640;padding:5px 13px;border-radius:999px;z-index:6}
+
+  /* editor grid */
+  .pgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .pg{aspect-ratio:3/4;border-radius:12px;background:#fff;border:1px solid #e6e0f2;position:relative;overflow:hidden;
+    box-shadow:0 5px 12px rgba(80,50,140,.12)}
+  .pg .num{position:absolute;bottom:5px;right:6px;font-size:10px;font-weight:700;color:#8b83a6}
+  .pg.sel{border:2px solid #7C4DFF;box-shadow:0 6px 16px rgba(124,77,255,.3)}
+  .pg .chk{position:absolute;top:5px;left:5px;width:18px;height:18px;border-radius:6px;background:#7C4DFF;display:grid;place-items:center}
+  .pg .chk svg{width:12px;height:12px;color:#fff}
+  .pg i{position:absolute;left:8px;right:8px;height:3px;border-radius:3px;background:#e9e3f4}
+  .edtools{display:flex;gap:8px;overflow:hidden;padding:2px}
+  .edt{flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;width:58px;font-size:10px;font-weight:620;color:#4a4165}
+  .edt .ec{width:48px;height:48px;border-radius:15px;background:rgba(255,255,255,.72);display:grid;place-items:center;border:1px solid rgba(255,255,255,.6)}
+  .edt .ec svg{width:20px;height:20px;color:#5a4d7d}
+
+  /* files */
+  .segbar{display:flex;gap:6px;background:rgba(255,255,255,.5);border-radius:14px;padding:5px}
+  .seg{flex:1;text-align:center;font-size:11.5px;font-weight:650;color:#6a6280;padding:8px 0;border-radius:10px}
+  .seg.on{background:#fff;color:#7C4DFF;box-shadow:0 3px 8px rgba(90,60,160,.14)}
+  .storebar{height:8px;border-radius:8px;background:rgba(124,77,255,.14);overflow:hidden}
+  .storebar > i{display:block;height:100%;width:46%;background:var(--cta);border-radius:8px}
+
+  /* settings */
+  .prof{display:flex;align-items:center;gap:13px;padding:15px}
+  .prof .av{width:56px;height:56px;border-radius:18px;background:var(--holo2);display:grid;place-items:center;font-weight:800;color:#3a2a55}
+  .setrow{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid rgba(120,90,170,.1)}
+  .setrow:last-child{border-bottom:0}
+  .setrow .si{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;color:#fff;flex:none}
+  .setrow .si svg{width:18px;height:18px}
+  .setrow .lbl{flex:1}
+  .setrow .lbl b{font-size:13.5px;font-weight:660;color:#241c38;display:block}
+  .setrow .lbl span{font-size:11px;color:#7a7392}
+  .tog{width:44px;height:26px;border-radius:999px;background:var(--cta);position:relative;flex:none}
+  .tog.off{background:#d7cfe6}
+  .tog i{position:absolute;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.2)}
+  .tog i{right:3px}.tog.off i{left:3px;right:auto}
+  .chev{color:#b3aac8}.chev svg{width:18px;height:18px}
+
+  /* paywall */
+  .planet{width:120px;height:120px;margin:6px auto 4px;border-radius:50%;position:relative;
+    background:radial-gradient(circle at 35% 30%,#EABBF5,#9AA6FF 55%,#6E7BF2 100%);
+    box-shadow:0 20px 50px rgba(120,90,240,.45), inset -12px -14px 30px rgba(60,40,120,.5), inset 8px 8px 20px rgba(255,255,255,.5)}
+  .planet::after{content:"";position:absolute;left:-22%;right:-22%;top:52%;height:26px;border-radius:50%;
+    background:linear-gradient(90deg,#F8A5E0,#8AA8FF);transform:rotate(-18deg);opacity:.9;
+    box-shadow:0 0 18px rgba(150,120,240,.6);z-index:-1}
+  .feat{display:flex;gap:12px;align-items:flex-start;padding:9px 2px}
+  .feat .fi{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;color:#fff;flex:none}
+  .feat b{font-size:13.5px;font-weight:700;color:#241c38;display:block}
+  .feat span{font-size:11.5px;color:#6a6280}
+  .plans{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+  .plan{border-radius:18px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.7);padding:13px 9px;text-align:center;
+    box-shadow:0 6px 14px rgba(90,60,160,.1)}
+  .plan.on{background:var(--cta);border-color:transparent;box-shadow:0 12px 24px rgba(230,90,160,.4)}
+  .plan .pi{width:30px;height:30px;border-radius:50%;background:rgba(124,77,255,.12);display:grid;place-items:center;margin:0 auto 7px;color:#7C4DFF}
+  .plan.on .pi{background:rgba(255,255,255,.28);color:#fff}
+  .plan .pi svg{width:16px;height:16px}
+  .plan b{font-size:12.5px;font-weight:720;color:#241c38}
+  .plan.on b,.plan.on small,.plan.on .pr{color:#fff}
+  .plan small{display:block;font-size:9.5px;color:#8a82a0;margin-top:2px}
+  .plan .pr{font-size:15px;font-weight:800;color:#241c38;margin-top:8px}
+  .restore{font-size:13px;font-weight:650;color:#7C4DFF}
+
+  .splash-logo{width:96px;height:96px;border-radius:30px;background:rgba(255,255,255,.28);backdrop-filter:blur(10px);
+    display:grid;place-items:center;border:1px solid rgba(255,255,255,.5);box-shadow:0 20px 46px rgba(120,80,220,.4)}
+  .splash-logo svg{width:52px;height:52px;color:#fff;filter:drop-shadow(0 3px 8px rgba(80,40,140,.4))}
+  .dots{display:flex;gap:7px}
+  .dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.9)}
+  .dots i:nth-child(2){opacity:.6}.dots i:nth-child(3){opacity:.35}
+
+  .backbtn{width:40px;height:40px;border-radius:13px;background:rgba(255,255,255,.6);display:grid;place-items:center;border:1px solid rgba(255,255,255,.6)}
+  .backbtn svg{width:19px;height:19px;color:#3a3155}
+
+  footer{margin-top:70px;padding-top:26px;border-top:1px solid var(--line);color:var(--sub);font-size:13.5px;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between}
+  @media (prefers-color-scheme:dark){footer{border-color:rgba(255,255,255,.08)} .glass,.card{border-color:rgba(255,255,255,.5)}}
+  :root[data-theme="dark"] footer{border-color:rgba(255,255,255,.08)}
+  svg{display:block}
+  @media (prefers-reduced-motion:no-preference){
+    .slot{animation:rise .6s cubic-bezier(.2,.7,.3,1) both}
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="brandrow">
+      <div class="brandmark">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 4 8v8l8 5 8-5V8l-8-5Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 3v18M4 8l8 5 8-5" stroke="#fff" stroke-width="1.6" stroke-linejoin="round" opacity=".85"/></svg>
+      </div>
+      <div>
+        <div class="kicker">Mobile App · Design Concept</div>
+        <h1>Prisma Scan</h1>
+      </div>
+    </div>
+    <p class="lede">A document scanner &amp; PDF studio — scan with auto edge-detection, clean up pages with magic filters, then read, edit, sign and share as PDF. Holographic glass UI, adapted from your reference into a full 9-screen flow.</p>
+    <div class="metarow">
+      <span class="chip">Flutter · Riverpod</span>
+      <span class="chip">iOS &amp; Android</span>
+      <span class="chip">Holographic glassmorphism</span>
+      <span class="chip">9 screens</span>
+      <span class="chip">Scan · Create · Sign</span>
+    </div>
+  </header>
+
+  <div class="gallery">
+
+    <!-- 1. SPLASH -->
+    <div class="slot">
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="body">
+          <div class="holobg"></div>
+          <div class="scroll" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:0">
+            <div class="splash-logo">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 4 8v8l8 5 8-5V8l-8-5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 3v18M4 8l8 5 8-5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:26px;font-weight:800;letter-spacing:-.02em;color:#241a3a">Prisma Scan</div>
+              <div style="font-size:13px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#5a4a7a;margin-top:4px">Scan · Create · Sign</div>
+            </div>
+            <div class="dots" style="margin-top:8px"><i></i><i></i><i></i></div>
+          </div>
+        </div>
+        <div class="homebar light"></div>
+      </div></div>
+      <div class="caption"><div class="n">01</div><h3>Splash</h3><p>Brand load — permissions &amp; last-session docs prefetch.</p></div>
+    </div>
+
+    <!-- 2. HOME -->
+    <div class="slot">
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="status onholo"><span>9:41</span><span class="rgt"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="14" width="3" height="6" rx="1"/><rect x="7" y="10" width="3" height="10" rx="1"/><rect x="12" y="6" width="3" height="14" rx="1"/><rect x="17" y="3" width="3" height="17" rx="1"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5C7 5 3 9 2 11l10 8 10-8c-1-2-5-6-10-6Z" opacity=".9"/></svg><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="18" height="10" rx="3" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="9" width="12" height="6" rx="1.5" fill="currentColor"/><rect x="21" y="10" width="2" height="4" rx="1" fill="currentColor"/></svg></span></div>
+        <div class="body">
+          <div class="holobg"></div>
+          <div class="scroll">
+            <!-- header -->
+            <div style="display:flex;align-items:center;gap:11px">
+              <div class="avatar">UW</div>
+              <div style="flex:1"><div style="font-size:11.5px;color:#5a4a7a;font-weight:600">Hi, Usman</div><div style="font-size:16px;font-weight:780;color:#241a3a;letter-spacing:-.01em">Welcome back</div></div>
+              <div class="iconbtn"><svg viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" stroke="#3a3155" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 20a2 2 0 0 0 4 0" stroke="#3a3155" stroke-width="1.6"/></svg></div>
+              <div class="iconbtn crown"><svg viewBox="0 0 24 24" fill="none"><path d="M3 8l4 4 5-7 5 7 4-4v9H3V8Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+            </div>
+            <!-- search -->
+            <div class="glass" style="margin-top:14px;display:flex;align-items:center;gap:9px;padding:12px 14px">
+              <svg viewBox="0 0 24 24" fill="none" style="width:18px;height:18px"><circle cx="11" cy="11" r="7" stroke="#6a5f88" stroke-width="1.7"/><path d="m20 20-3-3" stroke="#6a5f88" stroke-width="1.7" stroke-linecap="round"/></svg>
+              <span style="font-size:13.5px;color:#7a7092">Search documents…</span>
+            </div>
+            <!-- quick actions -->
+            <div class="quad" style="margin-top:14px">
+              <div class="qa"><div class="ico g-pink"><svg viewBox="0 0 24 24" fill="none"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><rect x="8" y="9" width="8" height="6" rx="1.4" stroke="#fff" stroke-width="1.7"/></svg></div><div><b>Scan</b><br><span>Camera + edges</span></div></div>
+              <div class="qa"><div class="ico g-violet"><svg viewBox="0 0 24 24" fill="none"><path d="M12 15V4m0 0L8 8m4-4 4 4" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg></div><div><b>Import</b><br><span>Photos &amp; files</span></div></div>
+              <div class="qa"><div class="ico g-blue"><svg viewBox="0 0 24 24" fill="none"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/></svg></div><div><b>PDF Tools</b><br><span>Merge · split</span></div></div>
+              <div class="qa"><div class="ico g-teal"><svg viewBox="0 0 24 24" fill="none"><path d="M3 17c3 0 3-8 6-8s3 6 6 6 3-3 6-3" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M4 20h16" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg></div><div><b>Sign</b><br><span>e-Signature</span></div></div>
+            </div>
+            <!-- recent -->
+            <div class="h-title" style="display:flex;justify-content:space-between"><span>Recent Documents</span><span style="color:#7C4DFF">See all</span></div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <div class="doc"><div class="thumb"><i style="top:9px"></i><i style="top:16px;right:16px;left:7px"></i><i style="top:23px"></i></div><div class="meta"><b>Invoice_2026_Q3.pdf</b><span>4 pages · 820 KB · Today</span></div><span class="tagp">PDF</span></div>
+              <div class="doc"><div class="thumb"><i style="top:9px"></i><i style="top:16px"></i><i style="top:23px;right:20px"></i></div><div class="meta"><b>Passport_Scan.pdf</b><span>1 page · 340 KB · Yesterday</span></div><span class="tagp">ID</span></div>
+              <div class="doc"><div class="thumb"><i style="top:9px"></i><i style="top:16px"></i><i style="top:23px"></i></div><div class="meta"><b>Contract_signed.pdf</b><span>7 pages · 1.2 MB · Mon</span></div><span class="tagp" style="color:#14B8A6;background:rgba(20,184,166,.12)">Signed</span></div>
+            </div>
+            <div style="height:78px"></div>
+          </div>
+          <!-- bottom nav -->
+          <div class="nav">
+            <a class="on"><svg viewBox="0 0 24 24" fill="none"><path d="M4 11 12 4l8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v9h12v-9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Home</a>
+            <a><svg viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>Files</a>
+            <div class="fab"><svg viewBox="0 0 24 24" fill="none"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3" stroke="#fff" stroke-width="1.8"/></svg></div>
+            <a><svg viewBox="0 0 24 24" fill="none"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.7"/></svg>Tools</a>
+            <a><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.3 1a7 7 0 0 0-1.7-1L16.5 3h-4l-.4 2.6a7 7 0 0 0-1.7 1l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7 7 0 0 0 1.7-1l2.3 1 2-3.4-2-1.5c.1-.3.1-.7.1-1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>Settings</a>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div></div>
+      <div class="caption"><div class="n">02</div><h3>Home</h3><p>Greeting, search, quick actions &amp; recent docs. Center FAB opens the scanner.</p></div>
+    </div>
+
+    <!-- 3. SCANNER -->
+    <div class="slot">
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="body">
+          <div class="vf">
+            <div class="pagebadge">Batch · 3 pages</div>
+            <div class="camtop">
+              <div class="cbtn"><svg viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18M6 6l12 12" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+              <div style="display:flex;gap:10px">
+                <div class="cbtn"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+                <div class="cbtn"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4h16v16H4zM4 9h16M4 15h16M9 4v16M15 4v16" stroke="#fff" stroke-width="1.3"/></svg></div>
+              </div>
+            </div>
+            <!-- detected paper -->
+            <div class="paper"><i style="top:20px"></i><i style="top:34px"></i><i style="top:48px;right:40px"></i><i style="top:80px"></i><i style="top:94px"></i><i style="top:108px;right:60px"></i></div>
+            <div class="edgeline" style="top:18%;left:10%;right:10%;bottom:20%"></div>
+            <div class="corner" style="top:18%;left:10%;border-right:0;border-bottom:0;border-radius:8px 0 0 0"></div>
+            <div class="corner" style="top:18%;right:10%;border-left:0;border-bottom:0;border-radius:0 8px 0 0"></div>
+            <div class="corner" style="bottom:20%;left:10%;border-right:0;border-top:0;border-radius:0 0 0 8px"></div>
+            <div class="corner" style="bottom:20%;right:10%;border-left:0;border-top:0;border-radius:0 0 8px 0"></div>
+            <div class="modes"><span>ID Card</span><span class="on">Auto</span><span>Book</span><span>QR</span></div>
+            <div class="shutter"><i></i></div>
+          </div>
+        </div>
+        <div class="homebar light"></div>
+      </div></div>
+      <div class="caption"><div class="n">03</div><h3>Scanner</h3><p>Live viewfinder with auto edge-detection, flash/grid, batch capture &amp; capture modes.</p></div>
+    </div>
+
+    <!-- 4. EDIT / CROP -->
+    <div class="slot">
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span class="rgt"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="14" width="3" height="6" rx="1"/><rect x="7" y="10" width="3" height="10" rx="1"/><rect x="12" y="6" width="3" height="14" rx="1"/><rect x="17" y="3" width="3" height="17" rx="1"/></svg><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="18" height="10" rx="3" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="9" width="12" height="6" rx="1.5" fill="currentColor"/></svg></span></div>
+        <div class="body">
+          <div class="light-bg"></div>
+          <div class="scroll">
+            <div class="topbar" style="padding:2px"><div class="backbtn"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5 8 12l7 7" stroke="#3a3155" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="tt">Edit &amp; Enhance</div><div class="iconbtn"><svg viewBox="0 0 24 24" fill="none"><path d="M12 4v16M4 12h16" stroke="#3a3155" stroke-width="1.8" stroke-linecap="round"/></svg></div></div>
+            <!-- crop preview -->
+            <div style="margin-top:12px;position:relative;border-radius:16px;overflow:hidden;background:linear-gradient(150deg,#f6f2ff,#e6ecff);height:270px;box-shadow:0 12px 28px rgba(90,60,160,.18)">
+              <div style="position:absolute;inset:24px 22px;border-radius:6px;background:#fff;box-shadow:0 8px 20px rgba(60,40,110,.14)">
+                <div style="position:absolute;left:16px;right:16px;top:20px;height:9px;border-radius:5px;background:#cabfe4"></div>
+                <div style="position:absolute;left:16px;right:40px;top:38px;height:6px;border-radius:5px;background:#e7e1f2"></div>
+                <div style="position:absolute;left:16px;right:24px;top:52px;height:6px;border-radius:5px;background:#e7e1f2"></div>
+                <div style="position:absolute;left:16px;right:60px;top:66px;height:6px;border-radius:5px;background:#e7e1f2"></div>
+              </div>
+              <div class="corner" style="top:18px;left:16px;border-right:0;border-bottom:0;border-color:#7C4DFF"></div>
+              <div class="corner" style="top:18px;right:16px;border-left:0;border-bottom:0;border-color:#7C4DFF"></div>
+              <div class="corner" style="bottom:18px;left:16px;border-right:0;border-top:0;border-color:#7C4DFF"></div>
+              <div class="corner" style="bottom:18px;right:16px;border-left:0;border-top:0;border-color:#7C4DFF"></div>
+            </div>
+            <!-- filters -->
+            <div class="chips" style="margin-top:13px"><span class="fchip on">Magic Color</span><span class="fchip">Original</span><span class="fchip">Grayscale</span><span class="fchip">B&amp;W</span></div>
+            <!-- tools -->
+            <div class="tools4" style="margin-top:14px">
+              <div class="tool"><div class="tc"><svg viewBox="0 0 24 24" fill="none"><path d="M6 2v14a2 2 0 0 0 2 2h14" stroke="#5a4d7d" stroke-width="1.7" stroke-linecap="round"/><path d="M18 22V8a2 2 0 0 0-2-2H2" stroke="#5a4d7d" stroke-width="1.7" stroke-linecap="round"/></svg></div>Crop</div>
+              <div class="tool"><div class="tc"><svg viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 1 1-3-6.7" stroke="#5a4d7d" stroke-width="1.7" stroke-linecap="round"/><path d="M21 3v5h-5" stroke="#5a4d7d" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Rotate</div>
+              <div class="tool"><div class="tc"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="#5a4d7d" stroke-width="1.7"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="#5a4d7d" stroke-width="1.7" stroke-linecap="round"/></svg></div>Adjust</div>
+              <div class="tool"><div class="tc"><svg viewBox="0 0 24 24" fill="none"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" stroke="#5a4d7d" stroke-width="1.7" stroke-linecap="round"/></svg></div>Retake</div>
+            </div>
+            <!-- filmstrip -->
+            <div class="filmstrip" style="margin-top:15px"><div class="fp sel"><i style="position:absolute;left:6px;right:6px;top:8px;height:3px;background:#d9d0ec;border-radius:3px"></i></div><div class="fp"></div><div class="fp"></div><div class="fp" style="display:grid;place-items:center;color:#a99fc4"><svg viewBox="0 0 24 24" fill="none" style="width:18px;height:18px"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div></div>
+            <div class="pill-cta" style="margin-top:16px"><svg viewBox="0 0 24 24" fill="none"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/></svg> Save as PDF</div>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div></div>
+      <div class="caption"><div class="n">04</div><h3>Edit &amp; Enhance</h3><p>Drag-corner crop, magic-color filters, rotate/adjust, multi-page filmstrip → Save as PDF.</p></div>
+    </div>
+
+    <!-- 5. PDF READER -->
+    <div class="slot">
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span class="rgt"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="14" width="3" height="6" rx="1"/><rect x="7" y="10" width="3" height="10" rx="1"/><rect x="12" y="6" width="3" height="14" rx="1"/><rect x="17" y="3" width="3" height="17" rx="1"/></svg><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="18" height="10" rx="3" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="9" width="12" height="6" rx="1.5" fill="currentColor"/></svg></span></div>
+        <div class="body">
+          <div class="light-bg"></div>
+          <div class="scroll">
+            <div class="topbar" style="padding:2px"><div class="backbtn"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5 8 12l7 7" stroke="#3a3155" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="tt">Invoice_2026_Q3.pdf</div><div style="display:flex;gap:8px"><div class="iconbtn"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3h12v18l-6-4-6 4V3Z" stroke="#3a3155" stroke-width="1.7" stroke-linejoin="round"/></svg></div></div></div>
+            <div class="readpage" style="margin-top:12px;height:420px">
+              <div class="hd"></div>
+              <div class="ln"></div><div class="ln"></div><div class="ln s"></div>
+              <div style="height:14px"></div>
+              <div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln s"></div>
+              <div style="height:14px"></div>
+              <div style="display:flex;gap:10px;margin:8px 0"><div style="flex:1;height:44px;border-radius:8px;background:#f0ebfa"></div><div style="flex:1;height:44px;border-radius:8px;background:#f0ebfa"></div></div>
+              <div class="ln"></div><div class="ln"></div><div class="ln s"></div>
+              <div style="height:14px"></div>
+              <div class="ln"></div><div class="ln s"></div>
+            </div>
+            <div class="pageind">Page 2 of 4</div>
+          </div>
+          <div class="rtool">
+            <span class="on"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.7"/><path d="m20 20-3-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+            <span><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13" y="4" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="4" y="13" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="13" y="13" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/></svg></span>
+            <span><svg viewBox="0 0 24 24" fill="none"><path d="M6 3h12v18l-6-4-6 4V3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+            <span><svg viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="19" cy="12" r="1.8" fill="currentColor"/></svg></span>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div></div>
+      <div class="caption"><div class="n">05</div><h3>PDF Reader</h3><p>Fluid page reader with search, thumbnail grid, bookmarks &amp; share. Swipe or scroll pages.</p></div>
+    </div>
+
+    <!-- 6. PDF EDITOR -->
+    <div class="slot">
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span class="rgt"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="14" width="3" height="6" rx="1"/><rect x="7" y="10" width="3" height="10" rx="1"/><rect x="12" y="6" width="3" height="14" rx="1"/><rect x="17" y="3" width="3" height="17" rx="1"/></svg><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="18" height="10" rx="3" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="9" width="12" height="6" rx="1.5" fill="currentColor"/></svg></span></div>
+        <div class="body">
+          <div class="light-bg"></div>
+          <div class="scroll">
+            <div class="topbar" style="padding:2px"><div class="backbtn"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5 8 12l7 7" stroke="#3a3155" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="tt">Organize Pages</div><div class="iconbtn" style="width:auto;padding:0 12px;font-size:12px;font-weight:700;color:#7C4DFF">2 sel</div></div>
+            <div class="pgrid" style="margin-top:14px">
+              <div class="pg sel"><div class="chk"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5 9-10" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><i style="top:14px"></i><i style="top:22px"></i><i style="top:30px;right:20px"></i><span class="num">1</span></div>
+              <div class="pg"><i style="top:14px"></i><i style="top:22px"></i><i style="top:30px"></i><span class="num">2</span></div>
+              <div class="pg sel"><div class="chk"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5 9-10" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><i style="top:14px"></i><i style="top:22px;right:22px"></i><i style="top:30px"></i><span class="num">3</span></div>
+              <div class="pg"><i style="top:14px"></i><i style="top:22px"></i><i style="top:30px"></i><span class="num">4</span></div>
+              <div class="pg"><i style="top:14px"></i><i style="top:22px;right:18px"></i><i style="top:30px"></i><span class="num">5</span></div>
+              <div class="pg"><i style="top:14px"></i><i style="top:22px"></i><i style="top:30px"></i><span class="num">6</span></div>
+            </div>
+            <div class="h-title">Tools</div>
+            <div class="edtools">
+              <div class="edt"><div class="ec"><svg viewBox="0 0 24 24" fill="none"><path d="M8 7V4h12v12h-3M4 8h12v12H4z" stroke="#5a4d7d" stroke-width="1.7" stroke-linejoin="round"/></svg></div>Merge</div>
+              <div class="edt"><div class="ec"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18M6 8 3 12l3 4M18 8l3 4-3 4" stroke="#5a4d7d" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Split</div>
+              <div class="edt"><div class="ec"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7V5h16v2M9 20h6M12 5v15" stroke="#5a4d7d" stroke-width="1.7" stroke-linecap="round"/></svg></div>Text</div>
+              <div class="edt"><div class="ec"><svg viewBox="0 0 24 24" fill="none"><path d="M3 17c3 0 3-8 6-8s3 6 6 6 3-3 6-3" stroke="#5a4d7d" stroke-width="1.7" stroke-linecap="round"/></svg></div>Sign</div>
+              <div class="edt"><div class="ec"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20 20 4M9 4H4v5M20 15v5h-5" stroke="#5a4d7d" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Mark</div>
+            </div>
+            <div class="pill-cta" style="margin-top:16px"><svg viewBox="0 0 24 24" fill="none"><path d="M12 15V4m0 11-4-4m4 4 4-4" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg> Export PDF</div>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div></div>
+      <div class="caption"><div class="n">06</div><h3>PDF Editor</h3><p>Reorder / delete pages, multi-select, then merge, split, add text, sign, watermark &amp; export.</p></div>
+    </div>
+
+    <!-- 7. FILES -->
+    <div class="slot">
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="status onholo"><span>9:41</span><span class="rgt"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="14" width="3" height="6" rx="1"/><rect x="7" y="10" width="3" height="10" rx="1"/><rect x="12" y="6" width="3" height="14" rx="1"/><rect x="17" y="3" width="3" height="17" rx="1"/></svg><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="18" height="10" rx="3" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="9" width="12" height="6" rx="1.5" fill="currentColor"/></svg></span></div>
+        <div class="body">
+          <div class="holobg"></div>
+          <div class="scroll">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 2px 0">
+              <div style="font-size:20px;font-weight:800;color:#241a3a;letter-spacing:-.02em">My Files</div>
+              <div class="iconbtn"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#3a3155" stroke-width="1.7"/><path d="m20 20-3-3" stroke="#3a3155" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+            </div>
+            <!-- storage -->
+            <div class="glass" style="margin-top:12px;padding:14px">
+              <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:650;color:#3a3155;margin-bottom:8px"><span>Storage · 4.2 GB of 9 GB</span><span style="color:#7C4DFF">Manage</span></div>
+              <div class="storebar"><i></i></div>
+            </div>
+            <div class="segbar" style="margin-top:12px"><div class="seg on">All</div><div class="seg">Scanned</div><div class="seg">Imported</div><div class="seg">Signed</div></div>
+            <div style="display:flex;flex-direction:column;gap:9px;margin-top:12px">
+              <div class="doc"><div class="thumb"><i style="top:9px"></i><i style="top:16px"></i><i style="top:23px"></i></div><div class="meta"><b>Invoice_2026_Q3.pdf</b><span>4 pages · 820 KB · Today</span></div><span class="chev"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+              <div class="doc"><div class="thumb" style="background:linear-gradient(150deg,#fff,#f4eeff)"><i style="top:9px"></i><i style="top:16px;right:18px"></i><i style="top:23px"></i></div><div class="meta"><b>Lease_agreement.pdf</b><span>12 pages · 2.1 MB · Sep 12</span></div><span class="chev"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+              <div class="doc"><div class="thumb"><i style="top:9px"></i><i style="top:16px"></i><i style="top:23px;right:22px"></i></div><div class="meta"><b>Receipts_batch.pdf</b><span>9 pages · 3.4 MB · Sep 10</span></div><span class="chev"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+              <div class="doc"><div class="thumb"><i style="top:9px"></i><i style="top:16px"></i><i style="top:23px"></i></div><div class="meta"><b>ID_front_back.pdf</b><span>2 pages · 610 KB · Sep 8</span></div><span class="chev"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            </div>
+            <div style="height:20px"></div>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div></div>
+      <div class="caption"><div class="n">07</div><h3>Files</h3><p>All documents with storage meter, filter segments, search &amp; swipe-to-rename/share/delete.</p></div>
+    </div>
+
+    <!-- 8. SETTINGS -->
+    <div class="slot">
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span class="rgt"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="14" width="3" height="6" rx="1"/><rect x="7" y="10" width="3" height="10" rx="1"/><rect x="12" y="6" width="3" height="14" rx="1"/><rect x="17" y="3" width="3" height="17" rx="1"/></svg><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="18" height="10" rx="3" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="9" width="12" height="6" rx="1.5" fill="currentColor"/></svg></span></div>
+        <div class="body">
+          <div class="light-bg"></div>
+          <div class="scroll">
+            <div style="font-size:20px;font-weight:800;color:#241a3a;letter-spacing:-.02em;padding:4px 2px 0">Settings</div>
+            <div class="card" style="margin-top:12px;background:var(--holo2);border:1px solid rgba(255,255,255,.5)">
+              <div class="prof">
+                <div class="av">UW</div>
+                <div style="flex:1"><div style="font-size:15px;font-weight:780;color:#241a3a">Usman Waris</div><div style="font-size:12px;color:#5a4a7a">Free plan · 12 docs</div></div>
+                <div style="background:var(--cta);color:#fff;font-size:11.5px;font-weight:750;padding:8px 12px;border-radius:12px">Go Pro</div>
+              </div>
+            </div>
+            <div class="card" style="margin-top:14px;padding:2px 4px">
+              <div class="setrow"><div class="si g-violet"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3a9 9 0 1 0 9 9c-5 0-9-4-9-9Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div class="lbl"><b>Dark Mode</b><span>Follow system</span></div><div class="tog off"><i></i></div></div>
+              <div class="setrow"><div class="si g-pink"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2" stroke="#fff" stroke-width="1.6"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#fff" stroke-width="1.6"/></svg></div><div class="lbl"><b>App Lock</b><span>Face ID / PIN</span></div><div class="tog"><i></i></div></div>
+              <div class="setrow"><div class="si g-blue"><svg viewBox="0 0 24 24" fill="none"><path d="M6 19a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1.5A4 4 0 0 1 18 19H6Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div class="lbl"><b>Cloud Sync</b><span>iCloud · Google Drive</span></div><div class="tog"><i></i></div></div>
+            </div>
+            <div class="card" style="margin-top:14px;padding:2px 4px">
+              <div class="setrow"><div class="si g-teal"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg></div><div class="lbl"><b>Export Quality</b><span>High · 300 DPI</span></div><span class="chev"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+              <div class="setrow"><div class="si g-amber"><svg viewBox="0 0 24 24" fill="none"><path d="M4 8V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2M4 8h16v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div class="lbl"><b>Default Save Folder</b><span>Prisma Scans</span></div><span class="chev"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+              <div class="setrow"><div class="si" style="background:linear-gradient(135deg,#94A3B8,#64748B)"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="1.6"/><path d="M12 8v5M12 16h.01" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="lbl"><b>About &amp; Help</b><span>v1.0.0</span></div><span class="chev"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div></div>
+      <div class="caption"><div class="n">08</div><h3>Settings</h3><p>Profile, theme, biometric lock, cloud sync, export quality &amp; default save location.</p></div>
+    </div>
+
+    <!-- 9. PAYWALL -->
+    <div class="slot">
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="status onholo"><span>9:41</span><span class="rgt"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="14" width="3" height="6" rx="1"/><rect x="7" y="10" width="3" height="10" rx="1"/><rect x="12" y="6" width="3" height="14" rx="1"/><rect x="17" y="3" width="3" height="17" rx="1"/></svg><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="18" height="10" rx="3" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="9" width="12" height="6" rx="1.5" fill="currentColor"/></svg></span></div>
+        <div class="body">
+          <div class="holobg"></div>
+          <div class="scroll">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:2px">
+              <div class="backbtn"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5 8 12l7 7" stroke="#3a3155" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span class="restore">Restore</span>
+            </div>
+            <div class="planet"></div>
+            <div style="text-align:center;margin-top:6px">
+              <div style="font-size:26px;font-weight:820;color:#221a35;letter-spacing:-.03em">Unlock Prisma Pro</div>
+              <div style="font-size:13px;color:#5a4a7a;margin-top:2px">Unlimited scans, no watermark</div>
+            </div>
+            <div style="margin-top:14px">
+              <div class="feat"><div class="fi g-violet"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div><b>Unlimited Scanning</b><span>No daily page limits</span></div></div>
+              <div class="feat"><div class="fi g-pink"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg></div><div><b>Remove Watermark</b><span>Clean, professional exports</span></div></div>
+              <div class="feat"><div class="fi g-blue"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg></div><div><b>OCR &amp; Text Export</b><span>Searchable PDF, Word &amp; TXT</span></div></div>
+              <div class="feat"><div class="fi g-teal"><svg viewBox="0 0 24 24" fill="none"><path d="M6 19a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1.5A4 4 0 0 1 18 19H6Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 12v6m0 0 2-2m-2 2-2-2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div><div><b>Cloud Backup</b><span>Sync across all devices</span></div></div>
+            </div>
+            <div class="plans" style="margin-top:8px">
+              <div class="plan"><div class="pi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2v20M2 12h20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div><b>Lifetime</b><small>one-time</small><div class="pr">$79</div></div>
+              <div class="plan on"><div class="pi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2v20M2 12h20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div><b>Weekly</b><small>7-day trial</small><div class="pr">$4.99</div></div>
+              <div class="plan"><div class="pi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2v20M2 12h20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div><b>Yearly</b><small>best value</small><div class="pr">$39</div></div>
+            </div>
+            <div class="pill-cta" style="margin-top:14px">Continue</div>
+            <div style="text-align:center;font-size:10.5px;color:#6a5f88;margin-top:8px">Auto-renewable · cancel anytime · Terms &amp; Privacy</div>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div></div>
+      <div class="caption"><div class="n">09</div><h3>Pro Paywall</h3><p>Feature list, three price tiers with weekly highlighted, Continue CTA &amp; Restore.</p></div>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>Prisma Scan — design concept for review. Next step: scaffold the Flutter app screen-by-screen from these.</span>
+    <span>Scan · Create · Sign</span>
+  </footer>
+</div>

@@ -1,0 +1,56 @@
+# Prisma Scan
+
+**Document Scanner &amp; PDF Studio** — scan with auto edge-detection, clean up
+pages with magic filters, then read, edit, sign and share as PDF. Built in
+Flutter with a holographic-glassmorphism UI.
+
+> Scan · Create · Sign
+
+## Status
+
+Built in phases — see [`docs/PHASES.md`](docs/PHASES.md).
+
+- ✅ **Phase 1 — Foundation &amp; Splash**: theme system, glass/gradient widgets, routing, splash screen.
+- ⏳ **Phase 2 — Home &amp; Navigation** (next)
+
+## Design
+
+- Interactive concept: [`docs/design/prisma-scan-mockup.html`](docs/design/prisma-scan-mockup.html) (open in a browser).
+- Image asset prompts: [`docs/IMAGE_PROMPTS.md`](docs/IMAGE_PROMPTS.md).
+
+## Tech stack
+
+| Area | Choice |
+|------|--------|
+| Framework | Flutter (Dart) |
+| State | Riverpod |
+| Routing | go_router |
+| Typography | google_fonts — Poppins + Plus Jakarta Sans |
+| Scanner | cunning_document_scanner *(Phase 3)* |
+| PDF | pdfx / syncfusion *(Phase 4–5)* |
+
+## Getting started
+
+```bash
+flutter pub get
+flutter run
+```
+
+Requires Flutter 3.4+ and a configured iOS/Android toolchain.
+
+## Project structure
+
+```
+lib/
+  main.dart          # entry (ProviderScope)
+  app.dart           # MaterialApp.router + themes
+  core/theme/        # colors, gradients, ThemeData
+  core/router/       # go_router table
+  shared/widgets/    # HoloBackground, GlassCard, GradientButton, ...
+  features/          # splash, home, (scanner, reader, editor, files, settings ...)
+docs/                # phase docs, image prompts, design mockup
+```
+
+## License
+
+Proprietary — all rights reserved (update as needed).
