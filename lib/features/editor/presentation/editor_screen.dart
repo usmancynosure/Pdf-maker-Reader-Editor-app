@@ -8,6 +8,7 @@ import '../../../shared/widgets/holo_background.dart';
 import '../../../shared/widgets/gradient_button.dart';
 import '../../home/application/documents_provider.dart';
 import '../../home/domain/document.dart';
+import '../../sign/presentation/signature_screen.dart';
 import '../application/editor_providers.dart';
 import '../domain/editor_page.dart';
 import 'widgets/editor_toolbar.dart';
@@ -182,6 +183,61 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     _snack(_watermark == null ? 'Watermark removed' : 'Watermark set — applied on export');
   }
 
+  Future<void> _sign() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => SignatureScreen(doc: widget.doc)),
+    );
+  }
+
+  Future<void> _addText() async {
+    final controller = TextEditingController();
+    final text = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add Text'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(labelText: 'Text (top of page 1)'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, controller.text),
+              child: const Text('Add')),
+        ],
+      ),
+    );
+    if (text == null || text.trim().isEmpty) return;
+
+    setState(() => _saving = true);
+    try {
+      final base = widget.doc.name.replaceAll('.pdf', '');
+      final file = await ref.read(pdfEditorServiceProvider).addText(
+            srcPath: widget.doc.filePath!,
+            text: text.trim(),
+            fileName: '${base}_text',
+          );
+      final len = await file.length();
+      ref.read(documentsProvider.notifier).add(Document(
+            id: const Uuid().v4(),
+            name: file.uri.pathSegments.last,
+            pageCount: widget.doc.pageCount,
+            sizeBytes: len,
+            createdAt: DateTime.now(),
+            tag: DocTag.pdf,
+            filePath: file.path,
+          ));
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      _snack('Saved ${file.uri.pathSegments.last}', color: AppColors.success);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      _snack('Could not add text: $e', color: AppColors.danger);
+    }
+  }
+
   Future<void> _export() => _runExport(_pages, defaultName: _suggestedName());
 
   Future<void> _runExport(List<EditorPage> pages, {required String defaultName}) async {
@@ -286,8 +342,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                   EditorToolbar(
                     onMerge: _merge,
                     onSplit: _split,
-                    onText: () => _snack('Add Text — coming soon'),
-                    onSign: () => _snack('e-Signature — coming soon'),
+                    onText: _addText,
+                    onSign: _sign,
                     onWatermark: _watermarkDialog,
                   ),
                   Padding(

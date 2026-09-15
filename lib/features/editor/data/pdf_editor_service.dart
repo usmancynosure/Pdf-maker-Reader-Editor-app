@@ -92,6 +92,37 @@ class PdfEditorService {
     }
   }
 
+  /// Stamps a line of text near the top of the first page and saves a new PDF.
+  Future<File> addText({
+    required String srcPath,
+    required String text,
+    required String fileName,
+  }) async {
+    final doc = sf.PdfDocument(inputBytes: File(srcPath).readAsBytesSync());
+    try {
+      final page = doc.pages[0];
+      final client = page.getClientSize();
+      page.graphics.drawString(
+        text,
+        sf.PdfStandardFont(sf.PdfFontFamily.helvetica, 18,
+            style: sf.PdfFontStyle.bold),
+        brush: sf.PdfSolidBrush(sf.PdfColor(124, 77, 255)),
+        bounds: Rect.fromLTWH(40, 40, client.width - 80, 40),
+      );
+      final bytes = await doc.save();
+
+      final dir = await getApplicationDocumentsDirectory();
+      final folder = Directory('${dir.path}/scans');
+      if (!folder.existsSync()) folder.createSync(recursive: true);
+      final safe = fileName.endsWith('.pdf') ? fileName : '$fileName.pdf';
+      final file = File('${folder.path}/$safe');
+      await file.writeAsBytes(bytes, flush: true);
+      return file;
+    } finally {
+      doc.dispose();
+    }
+  }
+
   sf.PdfPageRotateAngle _angle(int turns) => switch (turns) {
         1 => sf.PdfPageRotateAngle.rotateAngle90,
         2 => sf.PdfPageRotateAngle.rotateAngle180,

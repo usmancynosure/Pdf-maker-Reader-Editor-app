@@ -1,22 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
-import 'features/settings/application/settings_controller.dart';
 
-class PrismaScanApp extends ConsumerWidget {
+class PrismaScanApp extends StatelessWidget {
   const PrismaScanApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(settingsProvider.select((s) => s.themeMode));
-
+  Widget build(BuildContext context) {
+    // The Prisma design is a committed light holographic look, so we force the
+    // light theme regardless of the device's system setting. This keeps custom
+    // widgets (glass cards, bottom sheets, dialogs) legible everywhere.
     return MaterialApp.router(
       title: 'Prisma Scan',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: themeMode,
+      themeMode: ThemeMode.light,
       routerConfig: appRouter,
     );
   }
