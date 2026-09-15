@@ -203,7 +203,7 @@ class _QuickActions extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
-      childAspectRatio: 1.55,
+      childAspectRatio: 1.38,
       children: [
         QuickActionCard(
           icon: Icons.crop_free_rounded,
