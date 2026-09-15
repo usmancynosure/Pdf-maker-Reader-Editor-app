@@ -12,7 +12,8 @@ Built in phases — see [`docs/PHASES.md`](docs/PHASES.md).
 
 - ✅ **Phase 1 — Foundation &amp; Splash**: theme system, glass/gradient widgets, routing, splash screen.
 - ✅ **Phase 2 — Home &amp; Navigation**: full home, glass bottom nav + scan FAB, document model & Riverpod providers.
-- ⏳ **Phase 3 — Scanner &amp; Edit** (next)
+- ✅ **Phase 3 — Scanner &amp; Edit**: native edge-detection scan, magic-color/grayscale/B&W filters, multi-page, PDF export.
+- ⏳ **Phase 4 — PDF Reader** (next)
 
 ## Design
 

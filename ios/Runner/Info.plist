@@ -66,5 +66,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Prisma Scan uses the camera to scan documents and detect page edges.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Prisma Scan needs photo access to import images and save your scanned PDFs.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Prisma Scan saves exported PDFs and images to your photo library.</string>
 </dict>
 </plist>

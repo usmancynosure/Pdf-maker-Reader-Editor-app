@@ -30,6 +30,7 @@ class Document {
     required this.sizeBytes,
     required this.createdAt,
     required this.tag,
+    this.filePath,
   });
 
   final String id;
@@ -39,7 +40,13 @@ class Document {
   final DateTime createdAt;
   final DocTag tag;
 
-  Document copyWith({String? name, int? pageCount, int? sizeBytes, DocTag? tag}) {
+  /// Absolute path to the generated PDF on disk. Null for seeded samples.
+  final String? filePath;
+
+  bool get hasFile => filePath != null;
+
+  Document copyWith(
+      {String? name, int? pageCount, int? sizeBytes, DocTag? tag, String? filePath}) {
     return Document(
       id: id,
       name: name ?? this.name,
@@ -47,6 +54,7 @@ class Document {
       sizeBytes: sizeBytes ?? this.sizeBytes,
       createdAt: createdAt,
       tag: tag ?? this.tag,
+      filePath: filePath ?? this.filePath,
     );
   }
 

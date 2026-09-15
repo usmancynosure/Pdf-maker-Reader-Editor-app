@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/holo_background.dart';
 import '../../../shared/widgets/glass_bottom_nav.dart';
 import '../../home/presentation/home_screen.dart';
+import '../../scanner/application/scanner_providers.dart';
+import '../../scanner/presentation/edit_screen.dart';
 
 /// Root shell after splash: holds the four primary tabs behind the holographic
 /// background and the floating glass bottom nav with the center scan FAB.
 ///
 /// Tabs beyond Home are on-brand placeholders until their phases land
 /// (Files = Phase 6, Tools = Phase 3–5, Settings = Phase 7).
-class MainShell extends StatefulWidget {
+class MainShell extends ConsumerStatefulWidget {
   const MainShell({super.key});
 
   @override
-  State<MainShell> createState() => _MainShellState();
+  ConsumerState<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends State<MainShell> {
+class _MainShellState extends ConsumerState<MainShell> {
   int _index = 0;
 
   static const _destinations = [
@@ -27,14 +30,30 @@ class _MainShellState extends State<MainShell> {
     NavDestination(Icons.settings_outlined, Icons.settings_rounded, 'Settings'),
   ];
 
-  void _onScan() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.inkSoft,
-        content: Text('Scanner — arriving in Phase 3'),
-      ),
-    );
+  /// Launch the native scanner; on capture, open the Edit & Enhance screen.
+  Future<void> _startScan() async {
+    final scanner = ref.read(scannerServiceProvider);
+    try {
+      final paths = await scanner.scan();
+      if (paths.isEmpty || !mounted) return; // cancelled
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => EditScreen(
+            imagePaths: paths,
+            onRescan: () => scanner.scan(),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.danger,
+          content: Text('Scanner unavailable: $e'),
+        ),
+      );
+    }
   }
 
   @override
@@ -46,9 +65,9 @@ class _MainShellState extends State<MainShell> {
             IndexedStack(
               index: _index,
               children: [
-                HomeScreen(onScan: _onScan),
+                HomeScreen(onScan: _startScan),
                 const _ComingSoon(title: 'Files', phase: 'Phase 6'),
-                const _ComingSoon(title: 'PDF Tools', phase: 'Phase 3–5'),
+                const _ComingSoon(title: 'PDF Tools', phase: 'Phase 4–5'),
                 const _ComingSoon(title: 'Settings', phase: 'Phase 7'),
               ],
             ),
@@ -60,7 +79,7 @@ class _MainShellState extends State<MainShell> {
                   destinations: _destinations,
                   currentIndex: _index,
                   onSelect: (i) => setState(() => _index = i),
-                  onFabPressed: _onScan,
+                  onFabPressed: _startScan,
                 ),
               ),
             ),
