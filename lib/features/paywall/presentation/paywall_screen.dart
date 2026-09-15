@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_gradients.dart';
+import '../../../core/constants/app_images.dart';
 import '../../../shared/widgets/holo_background.dart';
 import '../../../shared/widgets/gradient_button.dart';
 import '../../settings/application/settings_controller.dart';
@@ -150,46 +151,11 @@ class _Planet extends StatelessWidget {
   const _Planet();
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 150,
-      height: 130,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Transform.rotate(
-            angle: -0.32,
-            child: Container(
-              width: 150,
-              height: 40,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(100),
-                gradient: const LinearGradient(
-                    colors: [AppColors.pink, AppColors.periwinkle]),
-                boxShadow: [
-                  BoxShadow(
-                      color: AppColors.lavender.withValues(alpha: 0.6),
-                      blurRadius: 18),
-                ],
-              ),
-            ),
-          ),
-          Container(
-            width: 116,
-            height: 116,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                center: Alignment(-0.3, -0.4),
-                colors: [Color(0xFFEABBF5), Color(0xFF9AA6FF), Color(0xFF6E7BF2)],
-                stops: [0.0, 0.55, 1.0],
-              ),
-              boxShadow: [
-                BoxShadow(color: Color(0x73785AF0), blurRadius: 40, offset: Offset(0, 18)),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return Image.asset(
+      AppImages.proPlanet,
+      width: 168,
+      height: 168,
+      fit: BoxFit.contain,
     );
   }
 }

@@ -55,8 +55,10 @@ class Asset:
         bg = (
             "Fill the entire frame with the holographic gradient background."
             if self.solid_bg
-            else "Place the subject on a plain, evenly-lit solid white background "
-            "(easy to cut out), centered with generous padding."
+            else "Place the subject on a perfectly flat, uniform pure white #FFFFFF "
+            "background with absolutely no gradient, no vignette and no drop "
+            "shadow — the background must be a single solid white so the subject "
+            "can be cleanly cut out. Centered with generous padding."
         )
         return (
             f"{SHARED_STYLE} {bg} Aspect ratio {self.aspect}. "
@@ -73,7 +75,7 @@ ASSETS: list[Asset] = [
     Asset("app_icon", "app_icon.png", "1:1", solid_bg=True, prompt=(
         "An iOS/Android app icon: the Prisma prism hexagon mark centered on a smooth "
         "holographic gradient, soft glass sheen, rounded-square safe area, glossy and premium.")),
-    Asset("wordmark", "wordmark.png", "16:5", transparent=True, prompt=(
+    Asset("wordmark", "wordmark.png", "21:9", transparent=True, prompt=(
         "The wordmark 'Prisma Scan' in a clean rounded geometric sans-serif, deep violet "
         "ink, with a small prism hexagon mark to the left. Balanced spacing, crisp.")),
     Asset("empty_documents", "empty_documents.png", "1:1", transparent=True, prompt=(

@@ -51,3 +51,7 @@ android/.kotlin/
 # Python venv & caches (image generator)
 .venv/
 __pycache__/
+
+# Secrets
+.env
+.env.*

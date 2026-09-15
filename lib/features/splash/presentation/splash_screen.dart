@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/constants/app_images.dart';
 import '../../../shared/widgets/holo_background.dart';
 
 /// Screen 01 — Brand splash on a holographic wash.
@@ -108,7 +109,8 @@ class _GlassLogo extends StatelessWidget {
               ),
             ],
           ),
-          child: const Icon(Icons.hexagon_outlined, size: 48, color: Colors.white),
+          padding: const EdgeInsets.all(14),
+          child: Image.asset(AppImages.logo, fit: BoxFit.contain),
         ),
       ),
     );
