@@ -20,6 +20,15 @@ Running on iOS with demo data.
 | <img src="docs/screenshots/05_tools.png" width="200"> | <img src="docs/screenshots/06_settings.png" width="200"> | <img src="docs/screenshots/07_paywall.png" width="200"> | |
 | **Tools** — pick a PDF to edit | **Settings** — app lock, sync, quality | **Pro** — plans & feature list | |
 
+### On a real device
+
+Native document scanning, real signature capture, and the final signed PDF — running on a physical phone.
+
+| Splash | Scanner (live) | Edit & Enhance | Sign | Signed PDF |
+|:---:|:---:|:---:|:---:|:---:|
+| <img src="docs/screenshots/real_5_splash.jpg" width="150"> | <img src="docs/screenshots/real_1_scanner.jpg" width="150"> | <img src="docs/screenshots/real_2_edit.jpg" width="150"> | <img src="docs/screenshots/real_3_signature.jpg" width="150"> | <img src="docs/screenshots/real_4_reader_signed.jpg" width="150"> |
+| Brand splash | Auto edge-detection on a real book | Magic-color filter + pages | Finger-drawn signature | Signature stamped onto the PDF |
+
 ## Status
 
 Built in phases — see [`docs/PHASES.md`](docs/PHASES.md).
