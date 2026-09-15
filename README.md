@@ -6,6 +6,20 @@ Flutter with a holographic-glassmorphism UI.
 
 > Scan · Create · Sign
 
+## Screenshots
+
+Running on iOS with demo data.
+
+| Home | Reader | Editor | Files |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/screenshots/01_home.png" width="200"> | <img src="docs/screenshots/02_reader.png" width="200"> | <img src="docs/screenshots/03_editor.png" width="200"> | <img src="docs/screenshots/04_files.png" width="200"> |
+| **Home** — quick actions & recent docs | **Reader** — pinch-zoom, thumbnails, share | **Editor** — reorder, merge, split, watermark | **Files** — search, storage, filters |
+
+| PDF Tools | Settings | Pro Paywall | |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/screenshots/05_tools.png" width="200"> | <img src="docs/screenshots/06_settings.png" width="200"> | <img src="docs/screenshots/07_paywall.png" width="200"> | |
+| **Tools** — pick a PDF to edit | **Settings** — app lock, sync, quality | **Pro** — plans & feature list | |
+
 ## Status
 
 Built in phases — see [`docs/PHASES.md`](docs/PHASES.md).
@@ -16,7 +30,7 @@ Built in phases — see [`docs/PHASES.md`](docs/PHASES.md).
 - ✅ **Phase 4 — PDF Reader**: pinch-zoom pager, page thumbnails, bookmark & share.
 - ✅ **Phase 5 — PDF Editor**: reorder/rotate/delete pages, merge, split, watermark, export (Syncfusion).
 - ✅ **Phase 6 — Files**: document library with search, storage meter, filter segments, rename/share/delete.
-- ✅ **Phase 7 — Settings &amp; Paywall**: persisted theme switching, settings, and the Prisma Pro paywall (RevenueCat-ready).
+- ✅ **Phase 7 — Settings &amp; Paywall**: persisted settings (app lock, cloud sync, export quality) and the Prisma Pro paywall (RevenueCat-ready).
 
 **All 7 phases complete** — the full app flow works end to end.
 
