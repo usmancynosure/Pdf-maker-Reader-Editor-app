@@ -1,0 +1,3 @@
+# Prisma Scan image generator
+google-genai>=0.3.0
+Pillow>=10.0.0   # only needed for --transparent background knockout

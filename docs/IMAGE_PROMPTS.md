@@ -1,5 +1,10 @@
 # Image Generation Prompts — Prisma Scan
 
+> **Automated generation:** `tools/generate_images.py` produces every asset below
+> via the Gemini image model and writes them to `assets/images/` with the right
+> filenames. See [Generating with Gemini](#generating-with-gemini) at the bottom.
+
+
 Prompts for every raster asset the app uses, ready to paste into an image
 generator (Midjourney, DALL·E 3, Ideogram, Firefly, SDXL). Keep the **shared
 style block** in every prompt so all assets read as one system.
@@ -145,3 +150,31 @@ Use: post-subscribe confirmation. **900×900**, transparent.
 - For icons that must stay crisp at small sizes, prefer **Ideogram/Firefly** or
   vectorize the winner (e.g. with an SVG tracer) and re-export.
 - Request 3–4 variations per asset, pick one, then upscale to the target size.
+
+---
+
+## Generating with Gemini
+
+The script `tools/generate_images.py` calls Google's Gemini image model
+(`gemini-2.5-flash-image`) for each asset above and saves it to `assets/images/`.
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r tools/requirements.txt
+
+export GEMINI_API_KEY="your_key_here"     # free key: https://aistudio.google.com/apikey
+
+python3 tools/generate_images.py --list                 # preview the catalog
+python3 tools/generate_images.py                        # generate all (skips existing)
+python3 tools/generate_images.py --only logo pro_planet # generate a subset
+python3 tools/generate_images.py --force                # overwrite existing
+python3 tools/generate_images.py --transparent          # knock out flat bg (needs Pillow)
+```
+
+Notes:
+- Gemini returns opaque PNGs. `--transparent` runs a border flood-fill that turns
+  the flat white background into alpha for the flagged logo/icon/illustration
+  assets (leave it off for `app_icon` / `store_hero`, which want a filled bg).
+- After generating, register the folder in `pubspec.yaml` (`assets: - assets/images/`)
+  and run `flutter pub get`.
+- For the launcher icon, feed `app_icon.png` to `flutter_launcher_icons`.
