@@ -14,7 +14,8 @@ Built in phases — see [`docs/PHASES.md`](docs/PHASES.md).
 - ✅ **Phase 2 — Home &amp; Navigation**: full home, glass bottom nav + scan FAB, document model & Riverpod providers.
 - ✅ **Phase 3 — Scanner &amp; Edit**: native edge-detection scan, magic-color/grayscale/B&W filters, multi-page, PDF export.
 - ✅ **Phase 4 — PDF Reader**: pinch-zoom pager, page thumbnails, bookmark & share.
-- ⏳ **Phase 5 — PDF Editor** (next)
+- ✅ **Phase 5 — PDF Editor**: reorder/rotate/delete pages, merge, split, watermark, export (Syncfusion).
+- ⏳ **Phase 6 — Files** (next)
 
 ## Design
 

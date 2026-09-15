@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/holo_background.dart';
 import '../../home/domain/document.dart';
+import '../../editor/presentation/editor_screen.dart';
 import '../application/reader_providers.dart';
 import 'widgets/thumbnail_grid_sheet.dart';
 
@@ -112,7 +113,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 onSearch: () => _todo('Text search'),
                 onThumbnails: _pageCount == 0 ? null : _openThumbnails,
                 onShare: _share,
-                onMore: () => _todo('More options'),
+                onEdit: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => EditorScreen(doc: widget.doc)),
+                ),
               ),
             ],
           ),
@@ -197,10 +200,10 @@ class _BottomBar extends StatelessWidget {
     required this.onSearch,
     required this.onThumbnails,
     required this.onShare,
-    required this.onMore,
+    required this.onEdit,
   });
   final String indicator;
-  final VoidCallback onSearch, onShare, onMore;
+  final VoidCallback onSearch, onShare, onEdit;
   final VoidCallback? onThumbnails;
 
   @override
@@ -240,7 +243,7 @@ class _BottomBar extends StatelessWidget {
                     _BarIcon(
                         icon: Icons.grid_view_rounded, onTap: onThumbnails),
                     _BarIcon(icon: Icons.ios_share_rounded, onTap: onShare),
-                    _BarIcon(icon: Icons.more_horiz_rounded, onTap: onMore),
+                    _BarIcon(icon: Icons.edit_document, onTap: onEdit),
                   ],
                 ),
               ),
