@@ -49,11 +49,17 @@ class _MainShellState extends ConsumerState<MainShell> {
       );
     } catch (e) {
       if (!mounted) return;
+      final s = e.toString().toLowerCase();
+      final noCamera = s.contains('11800') ||
+          s.contains('camera') ||
+          s.contains('avfoundation');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
-          backgroundColor: AppColors.danger,
-          content: Text('Scanner unavailable: $e'),
+          backgroundColor: AppColors.inkSoft,
+          content: Text(noCamera
+              ? 'No camera on this device — try Import from Photos, or use a real phone.'
+              : "Couldn't open the scanner. Please try again."),
         ),
       );
     }
@@ -65,14 +71,21 @@ class _MainShellState extends ConsumerState<MainShell> {
       body: HoloBackground(
         child: Stack(
           children: [
-            IndexedStack(
-              index: _index,
-              children: [
-                HomeScreen(onScan: _startScan),
-                const FilesScreen(),
-                const ToolsScreen(),
-                const SettingsScreen(),
-              ],
+            // Inset the body so its bottom edge aligns with the nav pill's
+            // bottom — content scrolls under the frosted pill, but nothing
+            // bleeds into the safe-area gap below it.
+            Padding(
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.paddingOf(context).bottom + 12),
+              child: IndexedStack(
+                index: _index,
+                children: [
+                  HomeScreen(onScan: _startScan),
+                  const FilesScreen(),
+                  const ToolsScreen(),
+                  const SettingsScreen(),
+                ],
+              ),
             ),
             Align(
               alignment: Alignment.bottomCenter,

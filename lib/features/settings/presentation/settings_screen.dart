@@ -35,34 +35,6 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          _SectionLabel('Appearance'),
-          GlassCard(
-            strong: true,
-            padding: const EdgeInsets.all(6),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                    children: [
-                      const Expanded(
-                        child: Text('Theme',
-                            style: TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.inkSoft)),
-                      ),
-                      _ThemeSelector(
-                        mode: settings.themeMode,
-                        onSelect: controller.setThemeMode,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
           _SectionLabel('Security & Sync'),
           GlassCard(
             strong: true,
@@ -294,46 +266,3 @@ class _ProfileCard extends StatelessWidget {
   }
 }
 
-class _ThemeSelector extends StatelessWidget {
-  const _ThemeSelector({required this.mode, required this.onSelect});
-  final ThemeMode mode;
-  final ValueChanged<ThemeMode> onSelect;
-
-  @override
-  Widget build(BuildContext context) {
-    const options = [
-      (ThemeMode.system, 'Auto'),
-      (ThemeMode.light, 'Light'),
-      (ThemeMode.dark, 'Dark'),
-    ];
-    return Container(
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: const Color(0x66FFFFFF),
-        borderRadius: BorderRadius.circular(11),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final (m, label) in options)
-            GestureDetector(
-              onTap: () => onSelect(m),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: m == mode ? AppColors.accent : Colors.transparent,
-                  borderRadius: BorderRadius.circular(9),
-                ),
-                child: Text(label,
-                    style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
-                        color: m == mode ? Colors.white : const Color(0xFF5A4D7D))),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
