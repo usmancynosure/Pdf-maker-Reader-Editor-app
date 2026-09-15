@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/document.dart';
 
@@ -11,6 +12,19 @@ class DocumentsNotifier extends Notifier<List<Document>> {
 
   void remove(String id) =>
       state = state.where((d) => d.id != id).toList(growable: false);
+
+  /// Removes the entry and best-effort deletes its file from disk.
+  Future<void> delete(String id) async {
+    final doc = state.firstWhere((d) => d.id == id);
+    final path = doc.filePath;
+    if (path != null) {
+      try {
+        final file = File(path);
+        if (file.existsSync()) await file.delete();
+      } catch (_) {/* file already gone — ignore */}
+    }
+    remove(id);
+  }
 
   void rename(String id, String name) => state = [
         for (final d in state) d.id == id ? d.copyWith(name: name) : d,

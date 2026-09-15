@@ -15,7 +15,8 @@ Built in phases — see [`docs/PHASES.md`](docs/PHASES.md).
 - ✅ **Phase 3 — Scanner &amp; Edit**: native edge-detection scan, magic-color/grayscale/B&W filters, multi-page, PDF export.
 - ✅ **Phase 4 — PDF Reader**: pinch-zoom pager, page thumbnails, bookmark & share.
 - ✅ **Phase 5 — PDF Editor**: reorder/rotate/delete pages, merge, split, watermark, export (Syncfusion).
-- ⏳ **Phase 6 — Files** (next)
+- ✅ **Phase 6 — Files**: document library with search, storage meter, filter segments, rename/share/delete.
+- ⏳ **Phase 7 — Settings &amp; Paywall** (next)
 
 ## Design
 

@@ -6,16 +6,24 @@ import '../../domain/document.dart';
 /// A single document row: page-stack thumbnail, name + meta, colored tag pill.
 /// Reused on Home (recent) and, later, on the Files screen.
 class DocumentTile extends StatelessWidget {
-  const DocumentTile({super.key, required this.doc, this.onTap, this.trailing});
+  const DocumentTile({
+    super.key,
+    required this.doc,
+    this.onTap,
+    this.onLongPress,
+    this.trailing,
+  });
 
   final Document doc;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      onLongPress: onLongPress,
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(11),

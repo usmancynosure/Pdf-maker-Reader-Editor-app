@@ -7,6 +7,7 @@ import '../../home/presentation/home_screen.dart';
 import '../../scanner/application/scanner_providers.dart';
 import '../../scanner/presentation/edit_screen.dart';
 import '../../editor/presentation/tools_screen.dart';
+import '../../files/presentation/files_screen.dart';
 
 /// Root shell after splash: holds the four primary tabs behind the holographic
 /// background and the floating glass bottom nav with the center scan FAB.
@@ -67,7 +68,7 @@ class _MainShellState extends ConsumerState<MainShell> {
               index: _index,
               children: [
                 HomeScreen(onScan: _startScan),
-                const _ComingSoon(title: 'Files', phase: 'Phase 6'),
+                const FilesScreen(),
                 const ToolsScreen(),
                 const _ComingSoon(title: 'Settings', phase: 'Phase 7'),
               ],

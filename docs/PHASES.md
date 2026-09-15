@@ -11,8 +11,8 @@ documented in `docs/phase-XX-*.md` and pushed to GitHub when complete.
 | **3** | Scanner & Edit | Camera + auto edge-detection (`cunning_document_scanner`), crop, magic-color filters, multi-page, save as PDF | ✅ Done |
 | **4** | PDF Reader | Open & read PDFs, thumbnails, search, bookmark, share | ✅ Done |
 | **5** | PDF Editor | Reorder / delete pages, merge, split, add text, e-signature, watermark, export | ✅ Done |
-| **6** | Files | Document library, folders, storage meter, rename/share/delete | ⏳ Next |
-| **7** | Settings & Paywall | Theme, biometric lock, cloud sync, export quality; Pro paywall + RevenueCat hooks | ⬜ Planned |
+| **6** | Files | Document library, folders, storage meter, rename/share/delete | ✅ Done |
+| **7** | Settings & Paywall | Theme, biometric lock, cloud sync, export quality; Pro paywall + RevenueCat hooks | ⏳ Next |
 
 ## Architecture
 
