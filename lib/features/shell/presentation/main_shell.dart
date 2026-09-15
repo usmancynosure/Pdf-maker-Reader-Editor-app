@@ -8,6 +8,7 @@ import '../../scanner/application/scanner_providers.dart';
 import '../../scanner/presentation/edit_screen.dart';
 import '../../editor/presentation/tools_screen.dart';
 import '../../files/presentation/files_screen.dart';
+import '../../settings/presentation/settings_screen.dart';
 
 /// Root shell after splash: holds the four primary tabs behind the holographic
 /// background and the floating glass bottom nav with the center scan FAB.
@@ -70,7 +71,7 @@ class _MainShellState extends ConsumerState<MainShell> {
                 HomeScreen(onScan: _startScan),
                 const FilesScreen(),
                 const ToolsScreen(),
-                const _ComingSoon(title: 'Settings', phase: 'Phase 7'),
+                const SettingsScreen(),
               ],
             ),
             Align(
@@ -86,33 +87,6 @@ class _MainShellState extends ConsumerState<MainShell> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ComingSoon extends StatelessWidget {
-  const _ComingSoon({required this.title, required this.phase});
-  final String title;
-  final String phase;
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(title, style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 6),
-              Text('Arriving in $phase',
-                  style: Theme.of(context).textTheme.bodyMedium),
-            ],
-          ),
         ),
       ),
     );

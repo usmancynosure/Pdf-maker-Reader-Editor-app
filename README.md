@@ -16,7 +16,9 @@ Built in phases — see [`docs/PHASES.md`](docs/PHASES.md).
 - ✅ **Phase 4 — PDF Reader**: pinch-zoom pager, page thumbnails, bookmark & share.
 - ✅ **Phase 5 — PDF Editor**: reorder/rotate/delete pages, merge, split, watermark, export (Syncfusion).
 - ✅ **Phase 6 — Files**: document library with search, storage meter, filter segments, rename/share/delete.
-- ⏳ **Phase 7 — Settings &amp; Paywall** (next)
+- ✅ **Phase 7 — Settings &amp; Paywall**: persisted theme switching, settings, and the Prisma Pro paywall (RevenueCat-ready).
+
+**All 7 phases complete** — the full app flow works end to end.
 
 ## Design
 
