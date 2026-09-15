@@ -46,6 +46,8 @@ dependencies:
   pdfx: ^2.11.0
   share_plus: ^13.3.0
   syncfusion_flutter_pdf: ^33.2.13
+  image_picker: ^1.2.3
+  signature: ^6.4.0
 
 dev_dependencies:
   flutter_test:

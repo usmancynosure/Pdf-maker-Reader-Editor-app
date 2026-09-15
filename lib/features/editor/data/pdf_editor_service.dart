@@ -62,6 +62,36 @@ class PdfEditorService {
     }
   }
 
+  /// Stamps a signature PNG onto the bottom-right of the last page and saves
+  /// the result as a new PDF.
+  Future<File> signPdf({
+    required String srcPath,
+    required List<int> signaturePng,
+    required String fileName,
+  }) async {
+    final doc = sf.PdfDocument(inputBytes: File(srcPath).readAsBytesSync());
+    try {
+      final page = doc.pages[doc.pages.count - 1];
+      final client = page.getClientSize();
+      const w = 175.0, h = 80.0;
+      page.graphics.drawImage(
+        sf.PdfBitmap(signaturePng),
+        Rect.fromLTWH(client.width - w - 40, client.height - h - 60, w, h),
+      );
+      final bytes = await doc.save();
+
+      final dir = await getApplicationDocumentsDirectory();
+      final folder = Directory('${dir.path}/scans');
+      if (!folder.existsSync()) folder.createSync(recursive: true);
+      final safe = fileName.endsWith('.pdf') ? fileName : '$fileName.pdf';
+      final file = File('${folder.path}/$safe');
+      await file.writeAsBytes(bytes, flush: true);
+      return file;
+    } finally {
+      doc.dispose();
+    }
+  }
+
   sf.PdfPageRotateAngle _angle(int turns) => switch (turns) {
         1 => sf.PdfPageRotateAngle.rotateAngle90,
         2 => sf.PdfPageRotateAngle.rotateAngle180,

@@ -3,12 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/holo_background.dart';
 import '../../../shared/widgets/glass_bottom_nav.dart';
+import '../../home/application/documents_provider.dart';
+import '../../home/domain/document.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../scanner/application/scanner_providers.dart';
 import '../../scanner/presentation/edit_screen.dart';
 import '../../editor/presentation/tools_screen.dart';
 import '../../files/presentation/files_screen.dart';
 import '../../settings/presentation/settings_screen.dart';
+import '../../sign/presentation/signature_screen.dart';
 
 /// Root shell after splash: holds the four primary tabs behind the holographic
 /// background and the floating glass bottom nav with the center scan FAB.
@@ -65,6 +68,79 @@ class _MainShellState extends ConsumerState<MainShell> {
     }
   }
 
+  /// Import photos from the gallery, then open the edit/enhance -> PDF flow.
+  Future<void> _import() async {
+    try {
+      final paths = await ref.read(importServiceProvider).pickImages();
+      if (paths.isEmpty || !mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => EditScreen(
+            imagePaths: paths,
+            onRescan: () => ref.read(importServiceProvider).pickImages(),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      _snack("Couldn't import images: $e", danger: true);
+    }
+  }
+
+  /// Pick a PDF, then draw a signature to stamp onto it.
+  Future<void> _sign() async {
+    final doc = await _pickPdf('Sign which PDF?');
+    if (doc == null || !mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => SignatureScreen(doc: doc)),
+    );
+  }
+
+  /// Bottom-sheet picker over the user's real PDFs.
+  Future<Document?> _pickPdf(String title) {
+    final docs =
+        ref.read(documentsProvider).where((d) => d.hasFile).toList();
+    if (docs.isEmpty) {
+      _snack('No PDFs yet — scan or import one first');
+      return Future.value();
+    }
+    return showModalBottomSheet<Document>(
+      context: context,
+      backgroundColor: AppColors.surfaceLight,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(title,
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+            ),
+            for (final d in docs)
+              ListTile(
+                leading: const Icon(Icons.picture_as_pdf_outlined,
+                    color: AppColors.accent),
+                title: Text(d.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                subtitle: Text('${d.pageCount} pages'),
+                onTap: () => Navigator.pop(ctx, d),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _snack(String msg, {bool danger = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: danger ? AppColors.danger : AppColors.inkSoft,
+      content: Text(msg),
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,7 +156,12 @@ class _MainShellState extends ConsumerState<MainShell> {
               child: IndexedStack(
                 index: _index,
                 children: [
-                  HomeScreen(onScan: _startScan),
+                  HomeScreen(
+                    onScan: _startScan,
+                    onImport: _import,
+                    onTools: () => setState(() => _index = 2),
+                    onSign: _sign,
+                  ),
                   const FilesScreen(),
                   const ToolsScreen(),
                   const SettingsScreen(),

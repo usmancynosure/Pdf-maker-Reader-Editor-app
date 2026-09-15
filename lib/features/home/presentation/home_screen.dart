@@ -12,10 +12,19 @@ import 'widgets/quick_action_card.dart';
 /// Screen 02 — Home. Greeting, search, quick actions, recent documents.
 /// Hosted inside [MainShell], which supplies the bottom nav + scan FAB.
 class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key, this.onScan});
+  const HomeScreen({
+    super.key,
+    this.onScan,
+    this.onImport,
+    this.onTools,
+    this.onSign,
+  });
 
   /// Triggered by the "Scan" quick action (same target as the shell FAB).
   final VoidCallback? onScan;
+  final VoidCallback? onImport;
+  final VoidCallback? onTools;
+  final VoidCallback? onSign;
 
   void _todo(BuildContext context, String what) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -58,9 +67,9 @@ class HomeScreen extends ConsumerWidget {
           const SizedBox(height: 14),
           _QuickActions(
             onScan: () => onScan?.call(),
-            onImport: () => _todo(context, 'Import'),
-            onTools: () => _todo(context, 'PDF Tools'),
-            onSign: () => _todo(context, 'Sign'),
+            onImport: () => onImport?.call(),
+            onTools: () => onTools?.call(),
+            onSign: () => onSign?.call(),
           ),
           const SizedBox(height: 6),
           Padding(
