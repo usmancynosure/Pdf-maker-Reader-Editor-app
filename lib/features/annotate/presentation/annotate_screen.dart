@@ -73,12 +73,11 @@ class _AnnotateScreenState extends ConsumerState<AnnotateScreen> {
 
   void _addText() {
     final a = Annotation(
-        type: AnnoType.text, left: .18, top: .4, width: .5, height: .06, text: 'Text');
+        type: AnnoType.text, left: .18, top: .4, width: .55, height: .06);
     setState(() {
       _annos.add(a);
-      _selected = a;
+      _selected = a; // shows the inline editor, auto-focused
     });
-    _editText(a);
   }
 
   void _addWhiteout() {
@@ -88,29 +87,6 @@ class _AnnotateScreenState extends ConsumerState<AnnotateScreen> {
       _annos.add(a);
       _selected = a;
     });
-  }
-
-  Future<void> _editText(Annotation a) async {
-    final controller = TextEditingController(text: a.text);
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Edit text'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLines: null,
-          decoration: const InputDecoration(hintText: 'Type here…'),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, controller.text),
-              child: const Text('OK')),
-        ],
-      ),
-    );
-    if (result != null) setState(() => a.text = result);
   }
 
   void _deleteSelected() {
@@ -192,7 +168,6 @@ class _AnnotateScreenState extends ConsumerState<AnnotateScreen> {
                                   selected: _selected,
                                   onSelect: (a) => setState(() => _selected = a),
                                   onChanged: () => setState(() {}),
-                                  onEditText: _editText,
                                 );
                               },
                             ),
@@ -319,7 +294,6 @@ class _PageCanvas extends StatelessWidget {
     required this.selected,
     required this.onSelect,
     required this.onChanged,
-    required this.onEditText,
   });
 
   final _PageData data;
@@ -327,7 +301,6 @@ class _PageCanvas extends StatelessWidget {
   final Annotation? selected;
   final ValueChanged<Annotation> onSelect;
   final VoidCallback onChanged;
-  final ValueChanged<Annotation> onEditText;
 
   @override
   Widget build(BuildContext context) {
@@ -369,6 +342,7 @@ class _PageCanvas extends StatelessWidget {
               ),
               for (final a in annos)
                 _AnnoWidget(
+                  key: ObjectKey(a),
                   a: a,
                   selected: identical(a, selected),
                   dx: dx,
@@ -378,7 +352,6 @@ class _PageCanvas extends StatelessWidget {
                   pagePtH: data.pointSize.height,
                   onSelect: () => onSelect(a),
                   onChanged: onChanged,
-                  onEditText: () => onEditText(a),
                 ),
             ],
           );
@@ -388,8 +361,9 @@ class _PageCanvas extends StatelessWidget {
   }
 }
 
-class _AnnoWidget extends StatelessWidget {
+class _AnnoWidget extends StatefulWidget {
   const _AnnoWidget({
+    super.key,
     required this.a,
     required this.selected,
     required this.dx,
@@ -399,92 +373,148 @@ class _AnnoWidget extends StatelessWidget {
     required this.pagePtH,
     required this.onSelect,
     required this.onChanged,
-    required this.onEditText,
   });
 
   final Annotation a;
   final bool selected;
   final double dx, dy, dw, dh, pagePtH;
-  final VoidCallback onSelect, onChanged, onEditText;
+  final VoidCallback onSelect, onChanged;
+
+  @override
+  State<_AnnoWidget> createState() => _AnnoWidgetState();
+}
+
+class _AnnoWidgetState extends State<_AnnoWidget> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.a.text);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final left = dx + a.left * dw;
-    final top = dy + a.top * dh;
-    final w = a.width * dw;
-    final h = a.height * dh;
-    final screenFont = a.fontSize * dh / pagePtH;
+    final a = widget.a;
+    final left = widget.dx + a.left * widget.dw;
+    final top = widget.dy + a.top * widget.dh;
+    final w = a.width * widget.dw;
+    final h = a.height * widget.dh;
+    final screenFont = (a.fontSize * widget.dh / widget.pagePtH).clamp(8.0, 60.0);
+    final editing = widget.selected && a.isText;
 
     return Positioned(
       left: left,
       top: top,
-      child: GestureDetector(
-        onTap: onSelect,
-        onDoubleTap: a.isText ? onEditText : null,
-        onPanStart: (_) => onSelect(),
-        onPanUpdate: (d) {
-          a.left = (a.left + d.delta.dx / dw).clamp(0.0, 1 - a.width);
-          a.top = (a.top + d.delta.dy / dh).clamp(0.0, 1 - a.height);
-          onChanged();
-        },
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Body — inline-editable text, or a white-out rectangle.
+          GestureDetector(
+            onTap: widget.onSelect,
+            // White-out / unselected-text can be dragged from the body;
+            // a focused text field manages its own gestures, so it uses the
+            // move handle instead.
+            onPanUpdate: editing ? null : (d) => _move(d.delta),
+            child: Container(
               width: w,
               height: h,
               alignment: Alignment.centerLeft,
+              padding: a.isText
+                  ? const EdgeInsets.symmetric(horizontal: 3)
+                  : EdgeInsets.zero,
               decoration: BoxDecoration(
-                color: a.isText
-                    ? (selected ? const Color(0x22000000) : Colors.transparent)
-                    : Colors.white,
+                color: a.isText ? Colors.transparent : Colors.white,
                 border: Border.all(
-                  color: selected
+                  color: widget.selected
                       ? AppColors.accent
-                      : (a.isText ? const Color(0x33000000) : const Color(0x22000000)),
-                  width: selected ? 1.5 : 1,
+                      : (a.isText
+                          ? const Color(0x33000000)
+                          : const Color(0x22000000)),
+                  width: widget.selected ? 1.5 : 1,
                 ),
               ),
-              child: a.isText
-                  ? Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3),
-                      child: Text(
-                        a.text,
-                        maxLines: null,
-                        style: TextStyle(
-                            fontSize: screenFont.clamp(8, 60),
-                            color: const Color(0xFF14141E),
-                            height: 1.15),
-                      ),
-                    )
-                  : null,
+              child: !a.isText
+                  ? null
+                  : editing
+                      ? TextField(
+                          controller: _controller,
+                          autofocus: true,
+                          maxLines: null,
+                          expands: false,
+                          cursorColor: AppColors.accent,
+                          onChanged: (v) => a.text = v,
+                          style: TextStyle(
+                              fontSize: screenFont,
+                              color: const Color(0xFF14141E),
+                              height: 1.15),
+                          decoration: const InputDecoration.collapsed(
+                            hintText: 'Type…',
+                            hintStyle: TextStyle(color: Color(0xFFB6AECB)),
+                          ),
+                        )
+                      : Text(
+                          a.text.isEmpty ? 'Tap to type' : a.text,
+                          maxLines: null,
+                          style: TextStyle(
+                              fontSize: screenFont,
+                              color: a.text.isEmpty
+                                  ? const Color(0xFFB6AECB)
+                                  : const Color(0xFF14141E),
+                              height: 1.15),
+                        ),
             ),
-            if (selected)
-              Positioned(
-                right: -9,
-                bottom: -9,
-                child: GestureDetector(
-                  onPanUpdate: (d) {
-                    a.width = (a.width + d.delta.dx / dw).clamp(0.06, 1 - a.left);
-                    a.height = (a.height + d.delta.dy / dh).clamp(0.02, 1 - a.top);
-                    onChanged();
-                  },
-                  child: Container(
-                    width: 20,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      color: AppColors.accent,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: const Icon(Icons.open_in_full_rounded,
-                        size: 11, color: Colors.white),
-                  ),
-                ),
+          ),
+
+          // Move handle (top-left) — only when selected, so a focused text
+          // field is still draggable.
+          if (widget.selected)
+            Positioned(
+              left: -11,
+              top: -11,
+              child: GestureDetector(
+                onPanUpdate: (d) => _move(d.delta),
+                child: _handle(Icons.open_with_rounded),
               ),
-          ],
-        ),
+            ),
+
+          // Resize handle (bottom-right).
+          if (widget.selected)
+            Positioned(
+              right: -11,
+              bottom: -11,
+              child: GestureDetector(
+                onPanUpdate: (d) {
+                  a.width =
+                      (a.width + d.delta.dx / widget.dw).clamp(0.06, 1 - a.left);
+                  a.height =
+                      (a.height + d.delta.dy / widget.dh).clamp(0.02, 1 - a.top);
+                  widget.onChanged();
+                },
+                child: _handle(Icons.open_in_full_rounded),
+              ),
+            ),
+        ],
       ),
     );
   }
+
+  void _move(Offset delta) {
+    final a = widget.a;
+    a.left = (a.left + delta.dx / widget.dw).clamp(0.0, 1 - a.width);
+    a.top = (a.top + delta.dy / widget.dh).clamp(0.0, 1 - a.height);
+    widget.onChanged();
+  }
+
+  Widget _handle(IconData icon) => Container(
+        width: 22,
+        height: 22,
+        decoration: BoxDecoration(
+          color: AppColors.accent,
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 2),
+        ),
+        child: Icon(icon, size: 12, color: Colors.white),
+      );
 }
