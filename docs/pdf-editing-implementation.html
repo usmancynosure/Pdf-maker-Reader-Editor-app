@@ -1,0 +1,228 @@
+<title>Prisma Scan — PDF Editing: Implementation & Interview Q&A</title>
+<style>
+  :root{
+    --violet:#7C4DFF; --pink:#EC4899; --amber:#FB923C; --cyan:#22B8CF; --teal:#14B8A6; --blue:#3B82F6;
+    --ink:#1A1726; --sub:#5A5570; --muted:#8A84A0; --line:#E9E4F3;
+    --bg:#F6F4FC; --bg2:#EEEAF8; --card:#FFFFFF; --soft:#F4F1FB; --code-bg:#f3effb;
+    --grad:linear-gradient(100deg,#A855F7,#EC4899 55%,#FB923C);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --ink:#F1EEFA; --sub:#B4AECB; --muted:#8983A3; --line:#2A2540;
+      --bg:#0E0B18; --bg2:#0A0813; --card:#191430; --soft:#1E1838; --code-bg:#1c1636; }
+  }
+  :root[data-theme="light"]{ --ink:#1A1726; --sub:#5A5570; --muted:#8A84A0; --line:#E9E4F3; --bg:#F6F4FC; --bg2:#EEEAF8; --card:#fff; --soft:#F4F1FB; --code-bg:#f3effb; }
+  :root[data-theme="dark"]{ --ink:#F1EEFA; --sub:#B4AECB; --muted:#8983A3; --line:#2A2540; --bg:#0E0B18; --bg2:#0A0813; --card:#191430; --soft:#1E1838; --code-bg:#1c1636; }
+  *{box-sizing:border-box}
+  body{margin:0;background:
+      radial-gradient(1000px 560px at 6% -6%, rgba(168,85,247,.13), transparent 60%),
+      radial-gradient(820px 560px at 110% 3%, rgba(34,184,207,.11), transparent 55%),
+      linear-gradient(180deg,var(--bg),var(--bg2));
+    color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,"Segoe UI",Roboto,sans-serif;
+    line-height:1.62;-webkit-font-smoothing:antialiased;font-size:16px;}
+  .wrap{max-width:940px;margin:0 auto;padding:52px 22px 90px}
+  h1,h2,h3{letter-spacing:-.02em;line-height:1.16;text-wrap:balance}
+  h1{font-size:clamp(28px,5vw,44px);font-weight:800;margin:.1em 0}
+  h2{font-size:clamp(21px,3.3vw,28px);font-weight:800;margin:0}
+  h3{font-size:16.5px;font-weight:750;margin:14px 0 4px}
+  p{margin:.5em 0}
+  a{color:var(--violet)}
+  .kicker{font-size:12px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--violet)}
+  .lead{font-size:18px;color:var(--sub);max-width:66ch}
+  .hero{display:flex;gap:16px;align-items:center;margin-bottom:8px}
+  .logo{width:58px;height:58px;border-radius:18px;background:var(--grad);flex:none;display:grid;place-items:center;
+    box-shadow:0 12px 30px rgba(150,60,200,.34), inset 0 1px 0 rgba(255,255,255,.5)}
+  .logo svg{width:30px;height:30px}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+  .pill{font-size:12.5px;font-weight:650;color:var(--sub);background:var(--card);border:1px solid var(--line);padding:6px 12px;border-radius:999px}
+  section{margin-top:46px}
+  .sechead{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .secno{font-size:12px;font-weight:800;color:#fff;background:var(--violet);width:26px;height:26px;border-radius:8px;display:grid;place-items:center;flex:none}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:0 6px 18px rgba(80,50,140,.06)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr}}
+  /* flow */
+  .flow{display:flex;flex-wrap:wrap;align-items:stretch;margin-top:8px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 13px;min-width:120px;flex:1;display:flex;flex-direction:column;gap:2px}
+  .step .n{font-size:11px;font-weight:800;color:var(--violet)}
+  .step b{font-size:13.5px}.step span{font-size:11.5px;color:var(--muted)}
+  .arrow{display:flex;align-items:center;justify-content:center;color:var(--violet);width:28px;flex:none}
+  .arrow svg{width:19px;height:19px}
+  @media(max-width:720px){.arrow{width:100%;height:24px;transform:rotate(90deg)}}
+  /* code */
+  pre{background:var(--code-bg);border:1px solid var(--line);border-radius:12px;padding:14px 16px;overflow-x:auto;
+    font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:12.7px;line-height:1.55;color:var(--ink)}
+  code{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+  .kc{color:var(--violet);font-weight:600}.st{color:var(--teal)}.cm{color:var(--muted);font-style:italic}
+  p code,li code,td code{background:var(--code-bg);padding:1.5px 6px;border-radius:6px;font-size:13px}
+  /* coord diagram */
+  .coord{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:10px}
+  .coord .box{flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:12px 14px}
+  .coord .box b{display:block;font-size:13.5px}.coord .box span{font-size:12px;color:var(--muted)}
+  .coord .op{font-weight:800;color:var(--violet);font-size:20px}
+  ul.clean{list-style:none;padding:0;margin:8px 0} ul.clean li{padding:6px 0 6px 24px;position:relative;color:var(--sub)}
+  ul.clean li::before{content:"";position:absolute;left:2px;top:13px;width:8px;height:8px;border-radius:3px;background:var(--grad)}
+  b.hl{color:var(--ink)}
+  .note{background:var(--soft);border-left:3px solid var(--violet);border-radius:0 10px 10px 0;padding:10px 14px;font-size:14px;color:var(--sub);margin-top:12px}
+  .tablewrap{overflow-x:auto;margin-top:10px;border:1px solid var(--line);border-radius:14px}
+  table{border-collapse:collapse;width:100%;font-size:14px;min-width:480px}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line)}
+  th{background:var(--soft);font-weight:750;font-size:12.5px}
+  tr:last-child td{border-bottom:0}
+  details{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:2px 16px;margin-top:10px}
+  details[open]{border-color:var(--violet)}
+  summary{cursor:pointer;font-weight:700;padding:12px 0;list-style:none;display:flex;gap:10px}
+  summary::-webkit-details-marker{display:none}
+  summary .q{color:var(--violet);font-weight:800}
+  details p{margin:0 0 12px 24px;color:var(--sub);font-size:14.5px}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:13.5px}
+</style>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="logo"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 4 8v8l8 5 8-5V8l-8-5Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 3v18M4 8l8 5 8-5" stroke="#fff" stroke-width="1.6" opacity=".85"/></svg></div>
+    <div><div class="kicker">Technical Deep-Dive</div><h1>Editing PDFs in Prisma Scan</h1></div>
+  </div>
+  <p class="lead">How the <b class="hl">upload-a-PDF</b> and <b class="hl">on-page editing</b> (text boxes + white-out) features are built — the flow, the coordinate math, the code, and the interview questions that go with them.</p>
+  <div class="pills"><span class="pill">Flutter · Riverpod</span><span class="pill">file_picker</span><span class="pill">pdfx (render)</span><span class="pill">Syncfusion PDF (write)</span><span class="pill">inline TextField overlay</span></div>
+
+  <!-- 1 -->
+  <section>
+    <div class="sechead"><span class="secno">1</span><h2>What we built</h2></div>
+    <div class="grid2">
+      <div class="card"><h3 style="margin-top:0">① Upload a PDF</h3><p class="sub" style="color:var(--sub);font-size:14.5px;margin:0">Import any existing <code>.pdf</code> from the device, store it, and open it in the reader — every page viewable, then editable.</p></div>
+      <div class="card"><h3 style="margin-top:0">② On-page editor</h3><p style="color:var(--sub);font-size:14.5px;margin:0">Add <b class="hl">text boxes</b> you type into directly on the page, and <b class="hl">white-out</b> rectangles to cover old text. Move, resize, delete, then flatten to a new PDF.</p></div>
+    </div>
+    <div class="note"><b>Honest scope:</b> this overlays new content — it does not rewrite a PDF's original embedded text (and scanned pages have no text underneath, only an image). See §4 for why, and the OCR path forward.</div>
+  </section>
+
+  <!-- 2 -->
+  <section>
+    <div class="sechead"><span class="secno">2</span><h2>Feature 1 — Upload a PDF</h2></div>
+    <p class="lead">A small, reliable flow that reuses the existing reader/editor.</p>
+    <div class="flow">
+      <div class="step"><span class="n">1</span><b>Pick</b><span>file_picker (.pdf)</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step"><span class="n">2</span><b>Copy</b><span>into app documents dir</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step"><span class="n">3</span><b>Count pages</b><span>pdfx</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step"><span class="n">4</span><b>Add Document</b><span>Riverpod state</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step"><span class="n">5</span><b>Open Reader</b><span>view & edit</span></div>
+    </div>
+    <h3>The core code</h3>
+<pre><span class="cm">// import_service.dart — pick a PDF and copy it into app storage</span>
+<span class="kc">Future</span>&lt;File?&gt; pickPdf() <span class="kc">async</span> {
+  <span class="kc">final</span> files = <span class="kc">await</span> FilePicker.pickFiles(
+    type: FileType.custom, allowedExtensions: [<span class="st">'pdf'</span>]);
+  <span class="kc">if</span> (files.isEmpty) <span class="kc">return null</span>;              <span class="cm">// user cancelled</span>
+  <span class="kc">final</span> dir = <span class="kc">await</span> getApplicationDocumentsDirectory();
+  <span class="kc">return</span> File(files.first.path!).copy(<span class="st">'\${dir.path}/scans/\${files.first.name}'</span>);
+}</pre>
+    <div class="note"><b>Gotcha we hit:</b> <code>file_picker</code> requires iOS 15+, so we bumped the iOS deployment target (Podfile + Xcode project). A one-line native-config change, easy to miss.</div>
+  </section>
+
+  <!-- 3 -->
+  <section>
+    <div class="sechead"><span class="secno">3</span><h2>Feature 2 — On-page editor</h2></div>
+    <p class="lead">Three pieces: a <b class="hl">model</b>, a <b class="hl">screen</b> that overlays widgets on a rendered page, and a <b class="hl">service</b> that flattens them onto the PDF.</p>
+
+    <h3>Architecture</h3>
+    <div class="flow">
+      <div class="step"><span class="n">UI</span><b>AnnotateScreen</b><span>page image + overlays</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step"><span class="n">MODEL</span><b>Annotation</b><span>type + normalized rect + text</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step"><span class="n">SERVICE</span><b>AnnotateService</b><span>draw onto PDF (Syncfusion)</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step"><span class="n">OUT</span><b>New PDF</b><span>saved + listed</span></div>
+    </div>
+
+    <h3>The key idea: normalized coordinates</h3>
+    <p>An annotation is stored in <b class="hl">page-relative units from 0 to 1</b> (top-left origin) — <em>not</em> screen pixels. This is the trick that makes everything line up, because the same numbers map cleanly to both the on-screen preview and the final PDF.</p>
+    <div class="coord">
+      <div class="box"><b>Stored</b><span>left/top/width/height = 0…1</span></div>
+      <div class="op">→</div>
+      <div class="box"><b>On screen</b><span>× displayed image size (px)</span></div>
+      <div class="op">→</div>
+      <div class="box"><b>In the PDF</b><span>× page size (points)</span></div>
+    </div>
+    <p style="margin-top:10px">Because Syncfusion's drawing origin is also top-left, exporting is a plain multiply — no flipping or guessing:</p>
+<pre><span class="cm">// annotate_service.dart — flatten each overlay onto the page</span>
+<span class="kc">final</span> size = page.getClientSize();               <span class="cm">// page size in points</span>
+<span class="kc">final</span> rect = Rect.fromLTWH(
+  a.left * size.width,  a.top * size.height,       <span class="cm">// 0..1 → points</span>
+  a.width * size.width, a.height * size.height);
+<span class="kc">if</span> (a.type == AnnoType.whiteout) {
+  page.graphics.drawRectangle(brush: PdfSolidBrush(white), bounds: rect);
+} <span class="kc">else</span> {
+  page.graphics.drawString(a.text, PdfStandardFont(helvetica, a.fontSize),
+      brush: PdfSolidBrush(ink), bounds: rect);
+}</pre>
+
+    <h3>Inline (WYSIWYG) text — not a dialog</h3>
+    <p>The first version popped a dialog to type. We replaced it: each selected text box is a real <code>TextField</code> positioned on the page, so you type <b class="hl">exactly where the text will appear</b>. To keep a focused text box still draggable, we added a <b class="hl">move handle</b> (top-left) and a <b class="hl">resize handle</b> (bottom-right).</p>
+<pre><span class="cm">// a selected text annotation renders as an editable field, in place</span>
+editing
+  ? TextField(controller: _controller, autofocus: <span class="kc">true</span>, maxLines: <span class="kc">null</span>,
+      onChanged: (v) =&gt; a.text = v,
+      style: TextStyle(fontSize: a.fontSize * dh / pagePtH), <span class="cm">// scale pts→px</span>
+      decoration: <span class="kc">const</span> InputDecoration.collapsed(hintText: <span class="st">'Type…'</span>))
+  : Text(a.text);                                     <span class="cm">// static when not selected</span></pre>
+    <ul class="clean">
+      <li><b class="hl">Move / resize / delete</b> — drag handles update the same 0…1 numbers; a trash button in the top bar removes the selected overlay.</li>
+      <li><b class="hl">Per-page</b> — annotations are kept in a <code>Map&lt;pageIndex, List&lt;Annotation&gt;&gt;</code>; the page image is rendered by <code>pdfx</code> and cached.</li>
+      <li><b class="hl">Off the UI thread</b> — the same pattern as scanning: heavy PDF work never blocks the screen.</li>
+    </ul>
+  </section>
+
+  <!-- 4 -->
+  <section>
+    <div class="sechead"><span class="secno">4</span><h2>Why "edit the real text" is overlay, not replace</h2></div>
+    <p class="lead">The single most misunderstood thing about PDFs — worth knowing for interviews.</p>
+    <ul class="clean">
+      <li>A PDF stores text as <b class="hl">glyphs pinned to x/y coordinates</b>, with <b class="hl">no paragraphs and no reflow</b> — change a word's length and it overlaps the next.</li>
+      <li>Fonts are often <b class="hl">embedded &amp; subsetted</b>, so retyping needs the exact same font data.</li>
+      <li>A <b class="hl">scanned</b> page has <b class="hl">no text at all</b> — it's an image; there is nothing to "edit" until OCR adds a text layer.</li>
+    </ul>
+    <div class="tablewrap">
+      <table>
+        <tr><th>Approach</th><th>Effort</th><th>Notes</th></tr>
+        <tr><td><b>Overlay + white-out</b> (what we did)</td><td>Medium</td><td>Covers ~95% of real needs; free with Syncfusion.</td></tr>
+        <tr><td><b>OCR → extract text</b></td><td>Medium</td><td>Makes scans searchable/selectable; a new doc, not the original layout.</td></tr>
+        <tr><td><b>True in-place text edit</b></td><td>Very hard</td><td>Realistic only via a paid SDK (Apryse / PSPDFKit / Foxit).</td></tr>
+      </table>
+    </div>
+    <div class="note"><b>Next step:</b> add on-device <b>OCR</b> (<code>google_mlkit_text_recognition</code>, free) so scanned pages become selectable/extractable text — the honest way to "edit words" on a scan.</div>
+  </section>
+
+  <!-- 5 -->
+  <section>
+    <div class="sechead"><span class="secno">5</span><h2>Interview questions &amp; answers</h2></div>
+
+    <details open><summary><span class="q">Q</span>How do you edit an existing PDF in a Flutter app?</summary>
+      <p>Render pages with <code>pdfx</code> for display, and write with <code>syncfusion_flutter_pdf</code>. To edit, I overlay Flutter widgets (text fields, rectangles) on a rendered page image, then on export I load the PDF with Syncfusion and draw those overlays onto each page's graphics before saving a new file.</p></details>
+
+    <details open><summary><span class="q">Q</span>How do you keep an overlay aligned between the phone screen and the final PDF?</summary>
+      <p>Store every annotation in <b>normalized coordinates (0…1, top-left origin)</b> relative to the page — not pixels. On screen I multiply by the displayed image size; on export I multiply by the page size in points. Syncfusion's drawing origin is also top-left, so the mapping is a straight multiply with no coordinate flip.</p></details>
+
+    <details open><summary><span class="q">Q</span>Why not let users edit the actual text of the PDF?</summary>
+      <p>PDF text is positioned glyphs with no reflow, fonts are often subsetted, and scanned pages have no text layer at all. True in-place editing needs a commercial SDK. The pragmatic, free solution is overlay + white-out (cover old text, type new), plus OCR for scans.</p></details>
+
+    <details open><summary><span class="q">Q</span>You have a popup vs inline editing — which and why?</summary>
+      <p>Inline. A dialog is a context switch and hides the page. I render the selected text annotation as an in-place <code>TextField</code> so users type exactly where the text lands (WYSIWYG). The trade-off is gesture conflict: a focused field consumes drags, so I added an explicit move handle to keep it draggable.</p></details>
+
+    <details open><summary><span class="q">Q</span>How do you handle the file after import — permissions, storage?</summary>
+      <p><code>file_picker</code> returns a temp path; I copy it into the app's documents directory (<code>path_provider</code>) so it persists and is sandbox-safe, then store the path on the <code>Document</code> model. On iOS this needed bumping the deployment target to 15 for the plugin.</p></details>
+
+    <details open><summary><span class="q">Q</span>How would you make this testable?</summary>
+      <p>The export logic is a pure-ish service (<code>AnnotateService.apply</code>) that takes a source path + annotations and returns a file — unit-testable with a fixture PDF. Services are injected via Riverpod providers, so the UI can be widget-tested with a fake service. Coordinate mapping is pure math and trivially unit-tested.</p></details>
+
+    <details open><summary><span class="q">Q</span>Where could performance be a problem, and how do you avoid it?</summary>
+      <p>Rendering pages and building PDFs is heavy. Pages are rendered once and cached per index; the scan→PDF path runs pixel work in a background isolate via <code>compute()</code>. For very large PDFs I'd lazy-render pages and paginate rather than render all upfront.</p></details>
+  </section>
+
+  <footer>
+    <b>Prisma Scan</b> — PDF editing implementation &amp; interview notes · Flutter · pdfx + Syncfusion · Scan · Create · Sign
+  </footer>
+</div>
