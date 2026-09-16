@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pdfx/pdfx.dart' as pdfx;
+import 'package:uuid/uuid.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/holo_background.dart';
 import '../../../shared/widgets/glass_bottom_nav.dart';
@@ -10,6 +12,7 @@ import '../../scanner/application/scanner_providers.dart';
 import '../../scanner/presentation/edit_screen.dart';
 import '../../editor/presentation/tools_screen.dart';
 import '../../files/presentation/files_screen.dart';
+import '../../reader/presentation/reader_screen.dart';
 import '../../settings/presentation/settings_screen.dart';
 import '../../sign/presentation/signature_screen.dart';
 
@@ -68,8 +71,49 @@ class _MainShellState extends ConsumerState<MainShell> {
     }
   }
 
-  /// Import photos from the gallery, then open the edit/enhance -> PDF flow.
+  /// Import: choose photos (-> edit -> PDF) or an existing PDF file (-> reader).
   Future<void> _import() async {
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: AppColors.surfaceLight,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('Import from',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined,
+                  color: AppColors.accent),
+              title: const Text('Photos'),
+              subtitle: const Text('Turn images into a PDF'),
+              onTap: () => Navigator.pop(ctx, 'photos'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.picture_as_pdf_outlined,
+                  color: AppColors.accent),
+              title: const Text('PDF file'),
+              subtitle: const Text('Open an existing PDF to read & edit'),
+              onTap: () => Navigator.pop(ctx, 'pdf'),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (choice == 'photos') {
+      await _importPhotos();
+    } else if (choice == 'pdf') {
+      await _importPdf();
+    }
+  }
+
+  Future<void> _importPhotos() async {
     try {
       final paths = await ref.read(importServiceProvider).pickImages();
       if (paths.isEmpty || !mounted) return;
@@ -84,6 +128,40 @@ class _MainShellState extends ConsumerState<MainShell> {
     } catch (e) {
       if (!mounted) return;
       _snack("Couldn't import images: $e", danger: true);
+    }
+  }
+
+  Future<void> _importPdf() async {
+    try {
+      final file = await ref.read(importServiceProvider).pickPdf();
+      if (file == null || !mounted) return;
+
+      // Count pages for the document metadata.
+      var pageCount = 1;
+      try {
+        final d = await pdfx.PdfDocument.openFile(file.path);
+        pageCount = d.pagesCount;
+        await d.close();
+      } catch (_) {/* keep default */}
+
+      final len = await file.length();
+      final doc = Document(
+        id: const Uuid().v4(),
+        name: file.uri.pathSegments.last,
+        pageCount: pageCount,
+        sizeBytes: len,
+        createdAt: DateTime.now(),
+        tag: DocTag.imported,
+        filePath: file.path,
+      );
+      ref.read(documentsProvider.notifier).add(doc);
+      if (!mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => ReaderScreen(doc: doc)),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      _snack("Couldn't import PDF: $e", danger: true);
     }
   }
 

@@ -48,6 +48,7 @@ dependencies:
   syncfusion_flutter_pdf: ^33.2.13
   image_picker: ^1.2.3
   signature: ^6.4.0
+  file_picker: ^13.1.0
 
 dev_dependencies:
   flutter_test:

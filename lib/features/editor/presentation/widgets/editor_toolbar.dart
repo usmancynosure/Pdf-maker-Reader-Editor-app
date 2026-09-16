@@ -23,7 +23,7 @@ class EditorToolbar extends StatelessWidget {
         children: [
           _Tool(icon: Icons.merge_rounded, label: 'Merge', onTap: onMerge),
           _Tool(icon: Icons.call_split_rounded, label: 'Split', onTap: onSplit),
-          _Tool(icon: Icons.text_fields_rounded, label: 'Text', onTap: onText),
+          _Tool(icon: Icons.edit_note_rounded, label: 'Edit Text', onTap: onText),
           _Tool(icon: Icons.draw_outlined, label: 'Sign', onTap: onSign),
           _Tool(
               icon: Icons.branding_watermark_outlined,
